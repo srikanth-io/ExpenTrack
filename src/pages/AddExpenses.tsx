@@ -1,6 +1,24 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Platform } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Platform, Button } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+
+// Simulate a database
+let mockDatabase = [
+    {
+        id: '1',
+        itemName: 'Groceries',
+        date: new Date(2024, 7, 8),
+        expenseAmount: '2000',
+        description: 'Weekly groceries',
+    },
+    {
+        id: '2',
+        itemName: 'Electricity Bill',
+        date: new Date(2024, 7, 5),
+        expenseAmount: '1500',
+        description: 'Monthly electricity bill',
+    },
+];
 
 const AddExpenses = ({ mode = 'add', existingData = {}, onSave, onCancel }) => {
     const [date, setDate] = useState(existingData.date || new Date());
@@ -8,6 +26,16 @@ const AddExpenses = ({ mode = 'add', existingData = {}, onSave, onCancel }) => {
     const [expenseAmount, setExpenseAmount] = useState(existingData.expenseAmount || '');
     const [description, setDescription] = useState(existingData.description || '');
     const [showDatePicker, setShowDatePicker] = useState(false);
+
+    useEffect(() => {
+        // If mode is 'edit' and existingData is provided, initialize state
+        if (mode === 'edit' && existingData) {
+            setDate(existingData.date || new Date());
+            setItemName(existingData.itemName || '');
+            setExpenseAmount(existingData.expenseAmount || '');
+            setDescription(existingData.description || '');
+        }
+    }, [mode, existingData]);
 
     const onDateChange = (event, selectedDate) => {
         const currentDate = selectedDate || date;
@@ -17,12 +45,24 @@ const AddExpenses = ({ mode = 'add', existingData = {}, onSave, onCancel }) => {
 
     const handleSave = () => {
         const expenseData = {
+            id: existingData.id || new Date().toISOString(), // Generate a unique ID for new entries
             itemName,
             date,
             expenseAmount,
             description,
         };
-        onSave(expenseData);
+
+        // Simulate adding or updating expense in "database"
+        if (mode === 'edit') {
+            mockDatabase = mockDatabase.map(expense =>
+                expense.id === existingData.id ? expenseData : expense
+            );
+        } else {
+            mockDatabase.push(expenseData);
+        }
+
+        console.log('Updated Database:', mockDatabase); // Log to check
+        onSave && onSave(expenseData);
     };
 
     const handleClear = () => {
@@ -33,7 +73,7 @@ const AddExpenses = ({ mode = 'add', existingData = {}, onSave, onCancel }) => {
     };
 
     const handleCancel = () => {
-        onCancel();
+        onCancel && onCancel();
     };
 
     return (
