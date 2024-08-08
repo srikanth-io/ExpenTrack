@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import DashboardPage from './src/pages/DashboardPage';
 import SplashScreen from './src/pages/SplashScreen';
 import TabNavigator from './src/pages/TabNaviagator';
+import AddExpenses from './src/pages/AddExpenses';
+import { Colors } from './src/utils/colors';
+import { fonts } from './src/utils/fonts';
 
 
 const Stack = createStackNavigator();
@@ -41,8 +44,19 @@ export default function App() {
   return (
 
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Dashboard">
-        <Stack.Screen name="Dashboard" component={TabNavigator} options={{ headerShown: false }} />
+      <Stack.Navigator initialRouteName="SplashScreen"  screenOptions={{
+                    headerTitleAlign: 'center',  
+                    headerStyle: {
+                        backgroundColor: Colors.White, 
+                    },
+                    headerTitleStyle: {
+                        fontFamily : fonts.PoppinsRegular,
+                        fontWeight: 'bold',
+                    },
+                    ...TransitionPresets.SlideFromRightIOS, 
+                }}>
+        <Stack.Screen name="Dashboard" component={TabNavigator} options={{ headerShown: false, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'} }} />
+        <Stack.Screen name="AddExpenses" component={AddExpenses} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Add Expenses' }} />
       </Stack.Navigator>
     </NavigationContainer>
 

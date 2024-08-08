@@ -7,10 +7,18 @@ import DashboardPage from './DashboardPage';
 import AddExpenses from './AddExpenses';
 import { fonts } from '../utils/fonts';
 import { Colors } from './../utils/colors';
+import HomePage from './HomePage';
 
 const Tab = createBottomTabNavigator();
 
-const TabBarIcon = ({ name, iconSet, size, color }) => {
+interface TabBarIconProps {
+    name: string;
+    iconSet: 'Octicons' | 'Entypo' | 'Feather';
+    size: number;
+    color: string;
+}
+
+const TabBarIcon : React.FC<TabBarIconProps> = ({ name, iconSet, size, color }) => {
     let IconComponent;
 
     switch (iconSet) {
@@ -30,7 +38,7 @@ const TabBarIcon = ({ name, iconSet, size, color }) => {
     return <IconComponent name={name} size={size} color={color} />;
 };
 
-const TabNavigator = () => {
+const TabNavigator = ({ navigation }) => {
     return (
         <Tab.Navigator
             screenOptions={({ route }) => ({
@@ -38,7 +46,7 @@ const TabNavigator = () => {
                     let iconName;
                     let iconSet;
 
-                    if (route.name === 'Dashboard') {
+                    if (route.name === 'Home') {
                         iconSet = 'Octicons';
                         iconName = focused ? 'home' : 'home';
                     } else if (route.name === 'AllExpenses') {
@@ -67,22 +75,21 @@ const TabNavigator = () => {
                 tabBarInactiveTintColor: Colors.Gray,
             })}
         >
-            <Tab.Screen name="Dashboard" component={DashboardPage} />
-            <Tab.Screen name="AllExpenses" component={AllExpensesPage} />
+            <Tab.Screen name="Home" component={HomePage} options={{headerTitleAlign : 'center', headerTitle : 'Home', }}/>
+            <Tab.Screen name="AllExpenses" component={AllExpensesPage} options={{headerTitleAlign : 'center', headerTitle: 'All Expenses'}} />
             <Tab.Screen
                 name="AddExpenses"
-                component={AddExpenses}
+                component={'AddExpenses'}
                 options={{
                     tabBarIcon: ({ color }) => (
                         <Feather name="plus" size={30} color={Colors.White} />
                     ),
                     tabBarLabel: '               Add               ',
                     tabBarButton: (props) => (
-                        <TabBarButton {...props} />
+                        <TabBarButton {...props} navigation={navigation} />
                     ),
                     tabBarStyle: {
                         display: 'none',
-                      
                     },
                 }}
             />
@@ -90,7 +97,7 @@ const TabNavigator = () => {
     );
 };
 
-const TabBarButton = (props) => {
+const TabBarButton = ({ navigation, ...props }) => {
     return (
         <TouchableOpacity
             {...props}
@@ -104,6 +111,7 @@ const TabBarButton = (props) => {
                 elevation: 5,
                 padding : 5,
             }}
+            onPress={() => navigation.navigate(AddExpenses)} 
         >
             {props.children}
         </TouchableOpacity>
