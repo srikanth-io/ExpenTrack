@@ -44,16 +44,26 @@ export const saveExpense = async (expense: { itemName: string; date: string; exp
     );
 
     console.log('Expense saved successfully!', result.lastInsertRowId, result.changes);
+    console.log(expense)
   } catch (error) {
     console.error('Error saving expense:', error);
     throw error;
   }
 };
 
+export const getRecentExpenses = async () => {
+  try {
+    const db = await dbPromise;
+    const recentExpenses = await db.getAllAsync('SELECT * FROM expenses ORDER BY id DESC LIMIT 7');
+    return recentExpenses;
+  } catch (error) {
+    console.error('Error retrieving recent expenses:', error);
+  }
+};
+
 export const getAllExpenses = async () => {
   try {
     const db = await dbPromise;
-    // Retrieve all expenses
     const allRows = await db.getAllAsync('SELECT * FROM expenses');
     return allRows;
   } catch (error) {
@@ -68,5 +78,16 @@ export const getExpenseById = async (id) => {
     return expense;
   } catch (error) {
     console.error('Error retrieving expense by ID:', error);
+  }
+};
+
+export const getBalance = async () => {
+  try {
+    const db = await dbPromise;
+    const result = await db.getFirstAsync('SELECT SUM(expenseAmount) as balance FROM expenses');
+    const balance = result?.balance || 0;
+    return balance;
+  } catch (error) {
+    console.error('Error retrieving balance:', error);
   }
 };

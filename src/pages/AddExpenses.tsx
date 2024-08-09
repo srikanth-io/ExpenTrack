@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
-import { initializeDatabase, saveExpense } from '../utils/Database/db';
+import { initializeDatabase, saveExpense, getBalance } from '../utils/Database/db';
 
 const AddExpenses = () => {
   const [itemName, setItemName] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(new Date());
+  const [formattedDate, setFormattedDate] = useState('');
   const [expenseAmount, setExpenseAmount] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [balance, setBalance] = useState(0);
 
   useEffect(() => {
     const initDatabase = async () => {
@@ -42,7 +46,7 @@ const AddExpenses = () => {
   const handleSave = async () => {
     const expense = {
       itemName,
-      date,
+      date: formattedDate,
       expenseAmount,
       description,
       image: image ? image.uri : null,
@@ -52,13 +56,34 @@ const AddExpenses = () => {
       await saveExpense(expense);
       Alert.alert('Success', 'Expense saved successfully!');
       setItemName('');
-      setDate('');
+      setDate(new Date());
+      setFormattedDate('');
       setExpenseAmount('');
       setDescription('');
       setImage(null);
+      const newBalance = await getBalance();
+      setBalance(newBalance);
     } catch (error) {
       console.error('Error saving expense:', error);
       Alert.alert('Error', 'Failed to save expense.');
+    }
+  };
+
+  const onChangeDate = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(Platform.OS === 'ios');
+    setDate(currentDate);
+    setFormattedDate(currentDate.toLocaleDateString());
+  };
+
+  const handleAddBalance = async () => {
+    try {
+      const newBalance = await getBalance() + 10000; 
+      await saveBalance(newBalance);
+      setBalance(newBalance);
+    } catch (error) {
+      console.error('Error adding balance:', error);
+      Alert.alert('Error', 'Failed to add balance.');
     }
   };
 
@@ -77,11 +102,17 @@ const AddExpenses = () => {
         <View style={styles.space} />
 
         <Text style={styles.label}>Date:</Text>
-        <TextInput
-          style={styles.input}
-          value={date}
-          onChangeText={setDate}
-        />
+        <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
+          <Text style={styles.datePickerText}>{formattedDate || 'Select Date'}</Text>
+        </TouchableOpacity>
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode='date'
+            display='default'
+            onChange={onChangeDate}
+          />
+        )}
         <View style={styles.space} />
 
         <Text style={styles.label}>Expense Amount:</Text>
@@ -89,6 +120,7 @@ const AddExpenses = () => {
           style={styles.input}
           value={expenseAmount}
           onChangeText={setExpenseAmount}
+          keyboardType='number-pad'
         />
         <View style={styles.space} />
 
@@ -117,11 +149,10 @@ const AddExpenses = () => {
   );
 };
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    top : 50,
+    top: 50,
   },
   balancePreview: {
     position: 'absolute',
@@ -134,57 +165,68 @@ const styles = StyleSheet.create({
   balanceText: {
     color: Colors.White,
     fontFamily: fonts.PoppinsRegular,
-    fontWeight : 'bold',
+    fontWeight: 'bold',
     fontSize: 18,
   },
   formContainer: {
     padding: 20,
-    top : 30,
+    top: 30,
   },
   label: {
     fontFamily: fonts.PoppinsRegular,
-    fontWeight : 'bold',
+    fontWeight: 'bold',
     fontSize: 18,
     marginBottom: 5,
   },
   input: {
-    maxHeight : 150,
+    maxHeight: 150,
     borderColor: Colors.Gray,
     borderWidth: 2,
     marginBottom: 10,
     padding: 10,
-    borderRadius : 15,
+    borderRadius: 15,
   },
   inputDes: {
-    height : 150,
+    height: 150,
     borderColor: Colors.Gray,
     borderWidth: 2,
     marginBottom: 10,
     padding: 10,
-    borderRadius : 15,
+    borderRadius: 15,
   },
   space: {
     height: 15,
   },
-  ButtonContainer : {
-    flexDirection : 'row',
+  datePickerButton: {
+    borderColor: Colors.Gray,
+    borderWidth: 2,
+    padding: 10,
+    borderRadius: 15,
+    marginBottom: 10,
+  },
+  datePickerText: {
+    fontFamily: fonts.PoppinsRegular,
+    fontSize: 18,
+  },
+  ButtonContainer: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent : 'space-evenly',
-    top : 10,
+    justifyContent: 'space-evenly',
+    top: 10,
   },
   imagePicker: {
     backgroundColor: Colors.Gray,
     padding: 10,
-    height : 50,
-    width : 150,
+    height: 50,
+    width: 150,
     borderRadius: 15,
-    alignItems : 'center',
-    justifyContent : 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   imagePickerText: {
     color: Colors.White,
     fontFamily: fonts.PoppinsRegular,
-    fontWeight : 'bold',
+    fontWeight: 'bold',
     fontSize: 18,
   },
   image: {
@@ -196,16 +238,16 @@ const styles = StyleSheet.create({
   saveButton: {
     backgroundColor: Colors.Gray,
     padding: 10,
-    height : 50,
-    width : 200,
+    height: 50,
+    width: 200,
     borderRadius: 15,
-    alignItems : 'center',
+    alignItems: 'center',
     justifyContent: 'center',
   },
   saveButtonText: {
     color: Colors.White,
     fontFamily: fonts.PoppinsRegular,
-    fontWeight : 'bold',
+    fontWeight: 'bold',
     fontSize: 18,
   },
 });
