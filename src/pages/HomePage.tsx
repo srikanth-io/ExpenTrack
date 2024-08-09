@@ -96,14 +96,14 @@ const styles = StyleSheet.create({
     fontFamily : fonts.PoppinsRegular,
   },
   recentExpensesContainer: {
-    // backgroundColor: '#f0f0f0',
+    backgroundColor: Colors.Gray,
     padding: 10,
-    borderRadius: 1,
+    borderRadius: 15,
     marginBottom: 20,
   },
   recentExpensesText: {
     fontSize :18,
-    // color: Colors.White,
+    color: Colors.White, 
     fontFamily : fonts.PoppinsRegular,
   },
   expenseContainer: {
@@ -121,6 +121,8 @@ const styles = StyleSheet.create({
   },
   expenseText: {
     fontSize: 16,
+    color: Colors.Black,
+    fontFamily: fonts.PoppinsRegular,
   },
   expenseActionsContainer: {
     flexDirection: 'row',
