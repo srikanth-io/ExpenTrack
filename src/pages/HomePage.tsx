@@ -4,7 +4,7 @@ import React from 'react'
 const HomePage = () => {
   return (
     <View>
-      <Text>HomePage</Text>
+      <Text>You don't have any records , create a Record First</Text>
     </View>
   )
 }

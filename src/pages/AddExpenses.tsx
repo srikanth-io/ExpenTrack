@@ -1,194 +1,213 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Platform, Button } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { Colors } from '../utils/colors';
+import { fonts } from '../utils/fonts';
+import { initializeDatabase, saveExpense } from '../utils/Database/db';
 
-// Simulate a database
-let mockDatabase = [
-    {
-        id: '1',
-        itemName: 'Groceries',
-        date: new Date(2024, 7, 8),
-        expenseAmount: '2000',
-        description: 'Weekly groceries',
-    },
-    {
-        id: '2',
-        itemName: 'Electricity Bill',
-        date: new Date(2024, 7, 5),
-        expenseAmount: '1500',
-        description: 'Monthly electricity bill',
-    },
-];
+const AddExpenses = () => {
+  const [itemName, setItemName] = useState('');
+  const [date, setDate] = useState('');
+  const [expenseAmount, setExpenseAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState(null);
 
-const AddExpenses = ({ mode = 'add', existingData = {}, onSave, onCancel }) => {
-    const [date, setDate] = useState(existingData.date || new Date());
-    const [itemName, setItemName] = useState(existingData.itemName || '');
-    const [expenseAmount, setExpenseAmount] = useState(existingData.expenseAmount || '');
-    const [description, setDescription] = useState(existingData.description || '');
-    const [showDatePicker, setShowDatePicker] = useState(false);
-
-    useEffect(() => {
-        // If mode is 'edit' and existingData is provided, initialize state
-        if (mode === 'edit' && existingData) {
-            setDate(existingData.date || new Date());
-            setItemName(existingData.itemName || '');
-            setExpenseAmount(existingData.expenseAmount || '');
-            setDescription(existingData.description || '');
-        }
-    }, [mode, existingData]);
-
-    const onDateChange = (event, selectedDate) => {
-        const currentDate = selectedDate || date;
-        setShowDatePicker(Platform.OS === 'ios');
-        setDate(currentDate);
+  useEffect(() => {
+    const initDatabase = async () => {
+      try {
+        await initializeDatabase();
+        console.log('Database initialized successfully.');
+      } catch (error) {
+        console.error('Error initializing database:', error);
+        Alert.alert('Error', 'Failed to initialize database.');
+      }
     };
 
-    const handleSave = () => {
-        const expenseData = {
-            id: existingData.id || new Date().toISOString(), // Generate a unique ID for new entries
-            itemName,
-            date,
-            expenseAmount,
-            description,
-        };
+    initDatabase();
+  }, []);
 
-        // Simulate adding or updating expense in "database"
-        if (mode === 'edit') {
-            mockDatabase = mockDatabase.map(expense =>
-                expense.id === existingData.id ? expenseData : expense
-            );
-        } else {
-            mockDatabase.push(expenseData);
-        }
+  const handleImagePick = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-        console.log('Updated Database:', mockDatabase); // Log to check
-        onSave && onSave(expenseData);
+    if (!result.canceled) {
+      setImage(result);
+    }
+  };
+
+  const handleSave = async () => {
+    const expense = {
+      itemName,
+      date,
+      expenseAmount,
+      description,
+      image: image ? image.uri : null,
     };
 
-    const handleClear = () => {
-        setItemName('');
-        setExpenseAmount('');
-        setDescription('');
-        setDate(new Date());
-    };
+    try {
+      await saveExpense(expense);
+      Alert.alert('Success', 'Expense saved successfully!');
+      setItemName('');
+      setDate('');
+      setExpenseAmount('');
+      setDescription('');
+      setImage(null);
+    } catch (error) {
+      console.error('Error saving expense:', error);
+      Alert.alert('Error', 'Failed to save expense.');
+    }
+  };
 
-    const handleCancel = () => {
-        onCancel && onCancel();
-    };
+  return (
+    <View style={styles.container}>
+      <View style={styles.balancePreview}>
+        <Text style={styles.balanceText}>Balance: $10000</Text>
+      </View>
+      <View style={styles.formContainer}>
+        <Text style={styles.label}>Item Name:</Text>
+        <TextInput
+          style={styles.input}
+          value={itemName}
+          onChangeText={setItemName}
+        />
+        <View style={styles.space} />
 
-    return (
-        <View style={styles.container}>
-            <View style={styles.balanceContainer}>
-                <Text style={styles.balanceText}>Balance: Rs.10000</Text>
-            </View>
+        <Text style={styles.label}>Date:</Text>
+        <TextInput
+          style={styles.input}
+          value={date}
+          onChangeText={setDate}
+        />
+        <View style={styles.space} />
 
-            <View style={styles.form}>
-                <Text style={styles.label}>Item Name:</Text>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={setItemName}
-                    value={itemName}
-                />
+        <Text style={styles.label}>Expense Amount:</Text>
+        <TextInput
+          style={styles.input}
+          value={expenseAmount}
+          onChangeText={setExpenseAmount}
+        />
+        <View style={styles.space} />
 
-                <Text style={styles.label}>Date:</Text>
-                <TouchableOpacity onPress={() => setShowDatePicker(true)} style={styles.input}>
-                    <Text>{date.toDateString()}</Text>
-                </TouchableOpacity>
-                {showDatePicker && (
-                    <DateTimePicker
-                        value={date}
-                        mode="date"
-                        display="default"
-                        onChange={onDateChange}
-                    />
-                )}
+        <Text style={styles.label}>Description:</Text>
+        <TextInput
+          style={styles.inputDes}
+          value={description}
+          onChangeText={setDescription}
+          multiline={true}
+        />
+        <View style={styles.space} />
 
-                <Text style={styles.label}>Expense Amount:</Text>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={setExpenseAmount}
-                    value={expenseAmount}
-                    keyboardType="numeric"
-                />
-
-                <Text style={styles.label}>Description:</Text>
-                <TextInput
-                    style={[styles.input, styles.textArea]}
-                    onChangeText={setDescription}
-                    value={description}
-                    multiline={true}
-                    maxLength={500}
-                />
-            </View>
-
-            <View style={styles.buttonContainer}>
-                {mode === 'add' ? (
-                    <TouchableOpacity style={styles.button} onPress={handleClear}>
-                        <Text style={styles.buttonText}>Clear</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity style={styles.button} onPress={handleCancel}>
-                        <Text style={styles.buttonText}>Cancel</Text>
-                    </TouchableOpacity>
-                )}
-                <TouchableOpacity style={styles.button} onPress={handleSave}>
-                    <Text style={styles.buttonText}>Save</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
-    );
+        <TouchableOpacity style={styles.ButtonContainer}>
+          <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
+            <Text style={styles.imagePickerText}>Add Picture</Text>
+            {image && (
+              <Image source={{ uri: image.uri }} style={styles.image} />
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 };
 
-export default AddExpenses;
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        padding: 20,
-        backgroundColor: '#fff',
-    },
-    balanceContainer: {
-        alignItems: 'flex-end',
-        marginBottom: 20,
-    },
-    balanceText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    form: {
-        marginBottom: 30,
-    },
-    label: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
-    },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
-        padding: 10,
-        borderRadius: 5,
-        marginBottom: 15,
-    },
-    textArea: {
-        height: 100,
-        textAlignVertical: 'top',
-    },
-    buttonContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    button: {
-        backgroundColor: '#007BFF',
-        padding: 15,
-        borderRadius: 5,
-        alignItems: 'center',
-        flex: 1,
-        marginHorizontal: 5,
-    },
-    buttonText: {
-        color: '#fff',
-        fontWeight: 'bold',
-        fontSize: 16,
-    },
+  container: {
+    flex: 1,
+    top : 50,
+  },
+  balancePreview: {
+    position: 'absolute',
+    top: 0,
+    right: 20,
+    backgroundColor: Colors.Grey,
+    padding: 15,
+    borderRadius: 15,
+  },
+  balanceText: {
+    color: Colors.White,
+    fontFamily: fonts.PoppinsRegular,
+    fontWeight : 'bold',
+    fontSize: 18,
+  },
+  formContainer: {
+    padding: 20,
+    top : 30,
+  },
+  label: {
+    fontFamily: fonts.PoppinsRegular,
+    fontWeight : 'bold',
+    fontSize: 18,
+    marginBottom: 5,
+  },
+  input: {
+    maxHeight : 150,
+    borderColor: Colors.Gray,
+    borderWidth: 2,
+    marginBottom: 10,
+    padding: 10,
+    borderRadius : 15,
+  },
+  inputDes: {
+    height : 150,
+    borderColor: Colors.Gray,
+    borderWidth: 2,
+    marginBottom: 10,
+    padding: 10,
+    borderRadius : 15,
+  },
+  space: {
+    height: 15,
+  },
+  ButtonContainer : {
+    flexDirection : 'row',
+    alignItems: 'center',
+    justifyContent : 'space-evenly',
+    top : 10,
+  },
+  imagePicker: {
+    backgroundColor: Colors.Gray,
+    padding: 10,
+    height : 50,
+    width : 150,
+    borderRadius: 15,
+    alignItems : 'center',
+    justifyContent : 'center',
+  },
+  imagePickerText: {
+    color: Colors.White,
+    fontFamily: fonts.PoppinsRegular,
+    fontWeight : 'bold',
+    fontSize: 18,
+  },
+  image: {
+    width: 100,
+    height: 100,
+    resizeMode: 'cover',
+    marginBottom: 10,
+  },
+  saveButton: {
+    backgroundColor: Colors.Gray,
+    padding: 10,
+    height : 50,
+    width : 200,
+    borderRadius: 15,
+    alignItems : 'center',
+    justifyContent: 'center',
+  },
+  saveButtonText: {
+    color: Colors.White,
+    fontFamily: fonts.PoppinsRegular,
+    fontWeight : 'bold',
+    fontSize: 18,
+  },
 });
+
+export default AddExpenses;

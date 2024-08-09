@@ -22,7 +22,7 @@ export default function App() {
 
         setTimeout(() => {
           setIsReady(true); 
-        }, 1000); 
+        }, 3000); 
       } catch (e) {
         console.warn(e);
       } finally {
