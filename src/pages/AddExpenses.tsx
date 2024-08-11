@@ -1,26 +1,30 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, Platform } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, Modal, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
-import { initializeDatabase, saveExpense, getBalance } from '../utils/Database/db';
+import { initializeDatabase, saveExpense, saveBalance, getBalance } from '../utils/Database/db';
 
 const AddExpenses = () => {
   const [itemName, setItemName] = useState('');
-  const [date, setDate] = useState(new Date());
+  const [date, setDate] = useState(null);  // Start with null
   const [formattedDate, setFormattedDate] = useState('');
-  const [expenseAmount, setExpenseAmount] = useState('');
+  const [expenseAmount, setExpenseAmount] = useState('0.0');  // Default value is 0.0
   const [description, setDescription] = useState('');
   const [image, setImage] = useState(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [balance, setBalance] = useState(0);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [newBalance, setNewBalance] = useState('');
 
   useEffect(() => {
     const initDatabase = async () => {
       try {
         await initializeDatabase();
         console.log('Database initialized successfully.');
+        const currentBalance = await getBalance();
+        setBalance(currentBalance);
       } catch (error) {
         console.error('Error initializing database:', error);
         Alert.alert('Error', 'Failed to initialize database.');
@@ -44,6 +48,22 @@ const AddExpenses = () => {
   };
 
   const handleSave = async () => {
+    // Validation
+    if (itemName.length < 4) {
+      Alert.alert('Validation Error', 'Item name must contain at least 4 characters.');
+      return;
+    }
+
+    if (!date) {
+      Alert.alert('Validation Error', 'Please select a date.');
+      return;
+    }
+
+    if (parseFloat(expenseAmount) <= 0) {
+      Alert.alert('Validation Error', 'Expense amount must be greater than 0.');
+      return;
+    }
+
     const expense = {
       itemName,
       date: formattedDate,
@@ -54,11 +74,12 @@ const AddExpenses = () => {
 
     try {
       await saveExpense(expense);
+      await saveBalance(balance - parseFloat(expenseAmount));  // Update balance after saving expense
       Alert.alert('Success', 'Expense saved successfully!');
       setItemName('');
-      setDate(new Date());
+      setDate(null);  // Reset date
       setFormattedDate('');
-      setExpenseAmount('');
+      setExpenseAmount('0.0');  // Reset amount to 0.0
       setDescription('');
       setImage(null);
       const newBalance = await getBalance();
@@ -71,16 +92,26 @@ const AddExpenses = () => {
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate || date;
-    setShowDatePicker(Platform.OS === 'ios');
+    setShowDatePicker(false);
     setDate(currentDate);
     setFormattedDate(currentDate.toLocaleDateString());
   };
 
+  const handleOpenModal = () => {
+    setModalVisible(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalVisible(false);
+    setNewBalance(''); // Clear input field
+  };
+
   const handleAddBalance = async () => {
     try {
-      const newBalance = await getBalance() + 10000; 
-      await saveBalance(newBalance);
-      setBalance(newBalance);
+      const updatedBalance = balance + parseFloat(newBalance);
+      await saveBalance(updatedBalance);
+      setBalance(updatedBalance);
+      handleCloseModal(); // Close modal after saving
     } catch (error) {
       console.error('Error adding balance:', error);
       Alert.alert('Error', 'Failed to add balance.');
@@ -90,9 +121,13 @@ const AddExpenses = () => {
   return (
     <View style={styles.container}>
       <View style={styles.balancePreview}>
-        <Text style={styles.balanceText}>Balance: $10000</Text>
+        <Text style={styles.balanceText}>Balance: ₹{balance.toFixed(2)}</Text>
+        <TouchableOpacity style={styles.addBalanceButton} onPress={handleOpenModal}>
+          <Text style={styles.addBalanceButtonText}>Add Balance</Text>
+        </TouchableOpacity>
       </View>
       <View style={styles.formContainer}>
+        {/* Form Fields */}
         <Text style={styles.label}>Item Name:</Text>
         <TextInput
           style={styles.input}
@@ -107,7 +142,7 @@ const AddExpenses = () => {
         </TouchableOpacity>
         {showDatePicker && (
           <DateTimePicker
-            value={date}
+            value={date || new Date()}
             mode='date'
             display='default'
             onChange={onChangeDate}
@@ -121,6 +156,7 @@ const AddExpenses = () => {
           value={expenseAmount}
           onChangeText={setExpenseAmount}
           keyboardType='number-pad'
+          placeholder='₹0.0'
         />
         <View style={styles.space} />
 
@@ -145,6 +181,35 @@ const AddExpenses = () => {
           </TouchableOpacity>
         </TouchableOpacity>
       </View>
+
+      {/* Balance Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={handleCloseModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Enter Balance</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={newBalance}
+              onChangeText={setNewBalance}
+              keyboardType="number-pad"
+              placeholder="₹0.0"
+            />
+            <View style={styles.modalButtons}>
+              <TouchableOpacity style={styles.modalButton} onPress={handleCloseModal}>
+                <Text style={styles.modalButtonText}>❌</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.modalButton} onPress={handleAddBalance}>
+                <Text style={styles.modalButtonText}>✔️</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -168,6 +233,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 18,
   },
+  addBalanceButton: {
+    backgroundColor: Colors.Green,
+    padding: 10,
+    borderRadius: 15,
+    marginTop: 10,
+  },
+  addBalanceButtonText: {
+    color: Colors.White,
+    fontFamily: fonts.PoppinsRegular,
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
   formContainer: {
     padding: 20,
     top: 30,
@@ -188,6 +265,7 @@ const styles = StyleSheet.create({
   },
   inputDes: {
     height: 150,
+    textAlignVertical: 'top',  // Text starts from the top
     borderColor: Colors.Gray,
     borderWidth: 2,
     marginBottom: 10,
@@ -249,6 +327,50 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsRegular,
     fontWeight: 'bold',
     fontSize: 18,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: Colors.White,
+    padding: 20,
+    borderRadius: 15,
+    width: '80%',
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontFamily: fonts.PoppinsRegular,
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  modalInput: {
+    width: '100%',
+    borderColor: Colors.Gray,
+    borderWidth: 2,
+    borderRadius: 15,
+    padding: 10,
+    marginBottom: 20,
+    fontSize: 18,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  modalButton: {
+    padding: 10,
+    borderRadius: 15,
+    backgroundColor: Colors.Gray,
+    width: '45%',
+    alignItems: 'center',
+  },
+  modalButtonText: {
+    fontSize: 18,
+    color: Colors.White,
+    fontFamily: fonts.PoppinsRegular,
   },
 });
 

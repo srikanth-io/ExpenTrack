@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native'; // Import the useNavigation hook
 import { getRecentExpenses, getBalance } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
@@ -7,6 +8,7 @@ import { fonts } from '../utils/fonts';
 const HomePage = () => {
   const [expenses, setExpenses] = useState([]);
   const [balance, setBalance] = useState(0);
+  const navigation = useNavigation(); // Use the useNavigation hook
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -47,22 +49,25 @@ const HomePage = () => {
       <FlatList
         data={expenses}
         renderItem={({ item }) => (
-          <View style={styles.expenseContainer}>
+          <TouchableOpacity 
+            style={styles.expenseContainer} 
+            onPress={() => navigation.navigate('EditExpense', { expense: item })} // Navigate to EditExpense page with the item data
+          >
             <View style={styles.expenseInfoContainer}>
-              <Text style={styles.expenseText}>Item Name: {item.itemName}</Text>
-              <Text style={styles.expenseText}>Date: {item.date}</Text>
-              <Text style={styles.expenseText}>Expense Amount: {item.expenseAmount}</Text>
-              <Text style={styles.expenseText}>Description: {item.description}</Text>
+              {item.itemName ? (
+                <Text style={styles.expenseText}>Item Name: {item.itemName}</Text>
+              ) : null}
+              {item.date ? (
+                <Text style={styles.expenseText}>Date: {item.date}</Text>
+              ) : null}
+              {item.expenseAmount ? (
+                <Text style={styles.expenseText}>Expense Amount: {item.expenseAmount}</Text>
+              ) : null}
+              {item.description ? (
+                <Text style={styles.expenseText}>Description: {item.description}</Text>
+              ) : null}
             </View>
-            <View style={styles.expenseActionsContainer}>
-              <TouchableOpacity style={styles.expenseActionButton}>
-                <Text style={styles.expenseActionText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.expenseActionButton}>
-                <Text style={styles.expenseActionText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </TouchableOpacity>
         )}
         keyExtractor={(item) => item.id.toString()}
       />
@@ -112,9 +117,6 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     marginBottom: 20,
-    flexDirection: 'row',
-    alignItems : 'center',
-    justifyContent: 'space-between',
   },
   expenseInfoContainer: {
     flex: 1,
@@ -123,19 +125,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.Black,
     fontFamily: fonts.PoppinsRegular,
-  },
-  expenseActionsContainer: {
-    flexDirection: 'row',
-  },
-  expenseActionButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  expenseActionText: {
-    fontSize: 16,
-    color: '#ffffff',
   },
 });
 
