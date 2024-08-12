@@ -10,7 +10,6 @@ export interface Expense {
     expenseAmount: number;
     description?: string;
     image?: string;
-    WebSQLDatabase: any;
   }
   
   interface Balance {

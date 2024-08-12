@@ -8,6 +8,7 @@ import { initializeDatabase, saveExpense, saveBalance, getBalance } from '../uti
 
 const MIN_ITEM_NAME_LENGTH = 2;
 
+
 const AddExpenses = () => {
   const [itemName, setItemName] = useState('');
   const [date, setDate] = useState(new Date());
@@ -123,7 +124,7 @@ const AddExpenses = () => {
     };
 
     try {
-      // Save the expense to the database
+
       await saveExpense(expense);
 
       // Show success message

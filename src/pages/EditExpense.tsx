@@ -36,7 +36,7 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
   const [image, setImage] = useState<{ uri: string } | null>(expense.image ? { uri: expense.image } : null);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [balance, setBalance] = useState<number>(0);
-
+  
   useEffect(() => {
     const fetchBalance = async () => {
       try {
