@@ -3,8 +3,10 @@ import { type } from './../types';
 
 type Balance =  any;
 
+type Database = ReturnType<typeof SQLite.openDatabaseAsync>;
 
-const openDatabase = async (): Promise<SQLite.WebSQLDatabase> => {
+
+const openDatabase = async (): Promise<Database> => {
   return await SQLite.openDatabaseAsync('expense.db');
 };
 
@@ -50,7 +52,7 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
     const result = await db.runAsync(
       'INSERT INTO expenses (itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?)',
       expense.itemName,
-      expense.date,
+      expense.date ?? null,
       expense.expenseAmount,
       expense.description ?? null,
       expense.image ?? null
@@ -88,7 +90,7 @@ export const getAllExpenses = async (): Promise<type.Expense[]> => {
 };
 
 // Function to get an expense by ID
-export const getExpenseById = async (id: number): Promise<type.Expense | undefined> => {
+export const getExpenseById = async (id: number): Promise<type.Expense | undefined | null> => {
   try {
     const db = await dbPromise;
     const expense = await db.getFirstAsync<type.Expense>('SELECT * FROM expenses WHERE id = ?', id);
@@ -133,7 +135,7 @@ export const saveBalance = async (amount: number): Promise<void> => {
 };
 
 // Function to update an expense
-export const updateExpense = async (expense: type.Expense): Promise<void> => {
+export const updateExpense = async (expense: type.Expense ): Promise<void> => {
   try {
     const db = await dbPromise;
     await db.runAsync(

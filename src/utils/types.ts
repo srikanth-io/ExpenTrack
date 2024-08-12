@@ -6,7 +6,7 @@ export namespace type {
 export interface Expense {
     id?: number;
     itemName: string;
-    date?: string;
+    date?: string | undefined;
     expenseAmount: number;
     description?: string;
     image?: string;
