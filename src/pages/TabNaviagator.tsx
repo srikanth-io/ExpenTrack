@@ -1,12 +1,21 @@
 import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { BottomTabNavigationProp, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TouchableOpacity } from 'react-native';
 import { Octicons, Entypo, Feather } from '@expo/vector-icons';
 import AllExpensesPage from './AllExpensesPage';
 import AddExpenses from './AddExpenses';
+import HomePage from './HomePage';
 import { fonts } from '../utils/fonts';
 import { Colors } from './../utils/colors';
-import HomePage from './HomePage';
+
+type TabBarIconProps = {
+  name: any;
+  iconSet: 'Octicons' | 'Entypo' | 'Feather';
+  size: number;
+  color: string;
+};
+type TabParamList = any;
+export type TabNavigationProp = BottomTabNavigationProp<TabParamList>;
 
 const Tab = createBottomTabNavigator();
 
@@ -31,13 +40,17 @@ const TabBarIcon: React.FC<TabBarIconProps> = ({ name, iconSet, size, color }) =
   return <IconComponent name={name} size={size} color={color} />;
 };
 
-const TabNavigator = ({ navigation }) => {
+type TabNavigatorProps = {
+  navigation: TabNavigationProp;
+};
+
+const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName;
-          let iconSet;
+          let iconName: string;
+          let iconSet: 'Octicons' | 'Entypo' | 'Feather';
 
           if (route.name === 'Home') {
             iconSet = 'Octicons';
@@ -45,6 +58,9 @@ const TabNavigator = ({ navigation }) => {
           } else if (route.name === 'AllExpenses') {
             iconSet = 'Entypo';
             iconName = focused ? 'list' : 'list';
+          } else {
+            iconSet = 'Octicons';
+            iconName = 'question';
           }
 
           return <TabBarIcon name={iconName} iconSet={iconSet} size={24} color={color} />;
@@ -56,15 +72,15 @@ const TabNavigator = ({ navigation }) => {
         tabBarStyle: {
           height: 80,
           paddingBottom: 10,
-          backgroundColor: Colors.AliceBlue,
+          backgroundColor: Colors.Gray,
           borderRadius: 15,
           elevation: 5,
           maxWidth: 400,
           bottom: 15,
           left: 13,
         },
-        tabBarActiveTintColor: Colors.BlueViolet,
-        tabBarInactiveTintColor: Colors.Gray,
+        tabBarActiveTintColor: Colors.White,
+        tabBarInactiveTintColor: Colors.AntiqueWhite,
       })}
     >
       <Tab.Screen
@@ -103,7 +119,11 @@ const TabNavigator = ({ navigation }) => {
   );
 };
 
-const TabBarButton = ({ navigation, ...props }) => {
+type TabBarButtonProps = {
+  navigation: TabNavigationProp;
+} & React.ComponentProps<typeof TouchableOpacity>;
+
+const TabBarButton: React.FC<TabBarButtonProps> = ({ navigation, ...props }) => {
   return (
     <TouchableOpacity
       {...props}

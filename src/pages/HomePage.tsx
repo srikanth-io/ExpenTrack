@@ -1,14 +1,37 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // Import the useNavigation hook
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getRecentExpenses, getBalance } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 
-const HomePage = () => {
-  const [expenses, setExpenses] = useState([]);
-  const [balance, setBalance] = useState(0);
-  const navigation = useNavigation(); // Use the useNavigation hook
+interface Expense {
+  id?: number;
+  itemName: string;
+  date?: string;
+  expenseAmount: number;
+  description?: string;
+  image?: string;
+}
+  
+interface item {
+  id?: undefined;
+  name: string;
+}
+
+export type RootStackParamList = {
+  HomePage: undefined;
+  EditExpense: { expense: Expense };
+};
+
+
+
+type HomePageNavigationProp = NavigationProp<RootStackParamList, 'HomePage'>;
+
+const HomePage: React.FC = () => {
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [balance, setBalance] = useState<number>(0);
+  const navigation = useNavigation<HomePageNavigationProp>(); 
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -37,25 +60,22 @@ const HomePage = () => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>Total Balance: {balance}</Text>
-        </View>
-        <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>Remaining Balance: {balance}</Text>
+          <Text style={styles.balanceText}>Remaining Balance: ₹  {balance}</Text>
         </View>
       </View>
       <View style={styles.recentExpensesContainer}>
-        <Text style={styles.recentExpensesText}>Recent Expenses of Past 7:</Text>
+        <Text style={styles.recentExpensesText}>Recent Expenses of Past 7 records:</Text>
       </View>
       <FlatList
         data={expenses}
         renderItem={({ item }) => (
           <TouchableOpacity 
             style={styles.expenseContainer} 
-            onPress={() => navigation.navigate('EditExpense', { expense: item })} // Navigate to EditExpense page with the item data
+            onPress={() => navigation.navigate('EditExpense', { expense: item })}
           >
             <View style={styles.expenseInfoContainer}>
               {item.itemName ? (
-                <Text style={styles.expenseText}>Item Name: {item.itemName}</Text>
+                <Text style={styles.expenseText}>Item: {item.itemName}</Text>
               ) : null}
               {item.date ? (
                 <Text style={styles.expenseText}>Date: {item.date}</Text>
@@ -69,7 +89,9 @@ const HomePage = () => {
             </View>
           </TouchableOpacity>
         )}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => index.toString()}
+        // keyExtractor={(item) => item.id.toString()}
+        
       />
     </View>
   );
@@ -83,22 +105,22 @@ const styles = StyleSheet.create({
   headerContainer: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    borderRadius : 15,
-    borderWidth : 2,
-    borderColor : Colors.Gray,
-    alignItems : 'center',
+    borderRadius: 15,
+    alignItems: 'center',
     marginBottom: 20,
-    height : 100,
+    height: 100,
+    backgroundColor: Colors.Gray,
   },
   balanceContainer: {
-    backgroundColor: Colors.Gray,
+    flex: 1,
     padding: 10,
+    alignItems: 'center',
     borderRadius: 10,
   },
   balanceText: {
-    fontSize: 16,
+    fontSize: 18,
     color: Colors.White,
-    fontFamily : fonts.PoppinsRegular,
+    fontFamily: fonts.PoppinsBold,
   },
   recentExpensesContainer: {
     backgroundColor: Colors.Gray,
@@ -107,13 +129,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   recentExpensesText: {
-    fontSize :18,
+    fontSize: 18,
     color: Colors.White, 
-    fontFamily : fonts.PoppinsRegular,
+    fontFamily: fonts.PoppinsRegular,
   },
   expenseContainer: {
-    borderColor : Colors.Gray,
-    borderWidth : 2,
+    backgroundColor:Colors.Grey,
     padding: 10,
     borderRadius: 10,
     marginBottom: 20,
@@ -123,7 +144,7 @@ const styles = StyleSheet.create({
   },
   expenseText: {
     fontSize: 16,
-    color: Colors.Black,
+    color: Colors.White,
     fontFamily: fonts.PoppinsRegular,
   },
 });

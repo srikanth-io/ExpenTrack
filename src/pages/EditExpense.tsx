@@ -1,65 +1,109 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert, Platform, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
-import { updateExpense, getBalance } from '../utils/Database/db'; // import the updateExpense function
+import { updateExpense, getBalance } from '../utils/Database/db'; 
 
-const EditExpense = ({ route, navigation }) => {
-  const { expense } = route.params; // Get the passed expense data from navigation
-  const [itemName, setItemName] = useState(expense.itemName);
-  const [date, setDate] = useState(new Date(expense.date));
-  const [formattedDate, setFormattedDate] = useState(expense.date);
-  const [expenseAmount, setExpenseAmount] = useState(expense.expenseAmount);
-  const [description, setDescription] = useState(expense.description);
-  const [image, setImage] = useState(expense.image ? { uri: expense.image } : null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [balance, setBalance] = useState(0);
+export interface Expense {
+  id?: number;
+  itemName: string;
+  date?: string;
+  expenseAmount: number;
+  description?: string;
+  image?: string;
+}
+
+
+interface EditExpenseProps {
+  route: {
+    params: {
+      expense: Expense;
+    };
+  };
+  navigation: any; 
+}
+
+const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
+  const { expense } = route.params;
+  
+  const [itemName, setItemName] = useState<string>(expense.itemName || '');
+  const [date, setDate] = useState<Date>(new Date(expense.date || Date.now()));
+  const [formattedDate, setFormattedDate] = useState<string>(expense.date || new Date().toLocaleDateString());
+  const [expenseAmount, setExpenseAmount] = useState<string>(expense.expenseAmount?.toString() || ''); 
+  const [description, setDescription] = useState<string>(expense.description || '');
+  const [image, setImage] = useState<{ uri: string } | null>(expense.image ? { uri: expense.image } : null);
+  const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
+  const [balance, setBalance] = useState<number>(0);
 
   useEffect(() => {
     const fetchBalance = async () => {
-      const currentBalance = await getBalance();
-      setBalance(currentBalance);
+      try {
+        const currentBalance = await getBalance();
+        setBalance(currentBalance || 0);
+      } catch (error) {
+        console.error('Error fetching balance:', error);
+        Alert.alert('Error', 'Failed to fetch balance.');
+      }
     };
 
     fetchBalance();
   }, []);
 
   const handleImagePick = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-    if (!result.canceled) {
-      setImage(result);
+      if (!result.canceled) {
+        setImage(result.assets[0]); 
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image.');
     }
   };
 
   const handleSave = async () => {
-    const updatedExpense = {
+    const updatedExpenseAmount = parseFloat(expenseAmount);
+
+    // Validate expense amount
+    if (isNaN(updatedExpenseAmount) || updatedExpenseAmount <= 0) {
+      Alert.alert('Validation Error', 'Expense amount must be greater than 0.');
+      return;
+    }
+
+    // Check if balance is sufficient
+    if (updatedExpenseAmount > balance) {
+      Alert.alert('Limit Exceeded', 'Insufficient balance.');
+      return;
+    }
+
+    const updatedExpense: Expense = {
       id: expense.id,
       itemName,
       date: formattedDate,
-      expenseAmount,
+      expenseAmount: updatedExpenseAmount, 
       description,
-      image: image ? image.uri : null,
+      // image: image ? image.uri : null,
     };
 
     try {
-      await updateExpense(updatedExpense); // Function to update the expense in the database
+      await updateExpense(updatedExpense);
       Alert.alert('Success', 'Expense updated successfully!');
-      navigation.goBack(); // Go back to the previous screen
+      navigation.goBack();
     } catch (error) {
       console.error('Error updating expense:', error);
       Alert.alert('Error', 'Failed to update expense.');
     }
   };
 
-  const onChangeDate = (event, selectedDate) => {
+  const onChangeDate = (event: any, selectedDate?: Date) => { 
     const currentDate = selectedDate || date;
     setShowDatePicker(Platform.OS === 'ios');
     setDate(currentDate);
@@ -69,7 +113,7 @@ const EditExpense = ({ route, navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.balancePreview}>
-        <Text style={styles.balanceText}>Balance: ${balance}</Text>
+        <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
       </View>
       <View style={styles.formContainer}>
         <Text style={styles.label}>Item Name:</Text>
@@ -98,8 +142,9 @@ const EditExpense = ({ route, navigation }) => {
         <TextInput
           style={styles.input}
           value={expenseAmount}
-          onChangeText={setExpenseAmount}
+          onChangeText={text => setExpenseAmount(text.replace(/[^0-9.]/g, ''))} 
           keyboardType='number-pad'
+          placeholder='₹0'
         />
         <View style={styles.space} />
 
@@ -131,7 +176,7 @@ const EditExpense = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    top: 50,
+    top: 30,
   },
   balancePreview: {
     position: 'absolute',
@@ -149,7 +194,7 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     padding: 20,
-    top: 30,
+    top: 60,
   },
   label: {
     fontFamily: fonts.PoppinsRegular,
@@ -167,6 +212,7 @@ const styles = StyleSheet.create({
   },
   inputDes: {
     height: 150,
+    textAlignVertical: 'top', 
     borderColor: Colors.Gray,
     borderWidth: 2,
     marginBottom: 10,

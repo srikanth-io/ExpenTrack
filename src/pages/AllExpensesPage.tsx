@@ -2,12 +2,22 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
 import { getAllExpenses, getBalance } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
+import { useNavigation } from '@react-navigation/native';
 import { fonts } from '../utils/fonts';
 
-const AllExpensesPage = () => {
-  const [expenses, setExpenses] = useState([]);
-  const [balance, setBalance] = useState(0);
+interface Expense {
+  id?: string | number;
+  itemName?: string;
+  date?: string;
+  expenseAmount?: number;
+  description?: string;
+}
 
+const AllExpensesPage: React.FC = () => {
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [balance, setBalance] = useState<number>(0);
+  const navigation = useNavigation<any>(); 
+  
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
@@ -35,7 +45,7 @@ const AllExpensesPage = () => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>Remaining Balance: {balance}</Text>
+          <Text style={styles.balanceText}>Remaining Balance: ₹ {balance}</Text>
         </View>
       </View>
       <View style={styles.recentExpensesContainer}>
@@ -44,24 +54,27 @@ const AllExpensesPage = () => {
       <FlatList
         data={expenses}
         renderItem={({ item }) => (
-          <View style={styles.expenseContainer}>
+          <TouchableOpacity 
+            style={styles.expenseContainer} 
+            onPress={() => navigation.navigate('EditExpense', { expense: item })}
+          >
             <View style={styles.expenseInfoContainer}>
-              <Text style={styles.expenseText}>Item Name: {item.itemName}</Text>
-              <Text style={styles.expenseText}>Date: {item.date}</Text>
-              <Text style={styles.expenseText}>Expense Amount: {item.expenseAmount}</Text>
-              <Text style={styles.expenseText}>Description: {item.description}</Text>
+              {item.itemName && (
+                <Text style={styles.expenseText}>Item: {item.itemName}</Text>
+              )}
+              {item.date && (
+                <Text style={styles.expenseText}>Date: {item.date}</Text>
+              )}
+              {item.expenseAmount !== undefined && (
+                <Text style={styles.expenseText}>Expense Amount: {item.expenseAmount}</Text>
+              )}
+              {item.description && (
+                <Text style={styles.expenseText}>Description: {item.description}</Text>
+              )}
             </View>
-            <View style={styles.expenseActionsContainer}>
-              <TouchableOpacity style={styles.expenseActionButton}>
-                <Text style={styles.expenseActionText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.expenseActionButton}>
-                <Text style={styles.expenseActionText}>Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+          </TouchableOpacity>
         )}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
       />
     </View>
   );
@@ -76,8 +89,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     borderRadius: 15,
-    borderWidth: 2,
-    borderColor: Colors.Gray,
     alignItems: 'center',
     marginBottom: 20,
     height: 100,
@@ -96,7 +107,7 @@ const styles = StyleSheet.create({
   recentExpensesContainer: {
     backgroundColor: Colors.Gray,
     padding: 10,
-    borderRadius: 10,
+    borderRadius: 15,
     marginBottom: 20,
   },
   recentExpensesText: {
@@ -106,38 +117,21 @@ const styles = StyleSheet.create({
   },
   expenseContainer: {
     borderColor: Colors.Gray,
-    color : Colors.White,
-    borderWidth: 2,
+    backgroundColor: Colors.Gray,
     padding: 10,
     borderRadius: 10,
     marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    // backgroundColor: Colors.White,
   },
   expenseInfoContainer: {
     flex: 1,
   },
   expenseText: {
     fontSize: 16,
-    color: Colors.Black,
+    color: Colors.White,
     fontFamily: fonts.PoppinsRegular,
-  },
-  expenseActionsContainer: {
-    flexDirection: 'row',
-  },
-  expenseActionButton: {
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 10,
-    marginRight: 10,
-  },
-  expenseActionText: {
-    fontSize: 16,
-    color: '#ffffff',
-    fontFamily : fonts.PoppinsRegular,
-    fontWeight: 'bold',
   },
 });
 
