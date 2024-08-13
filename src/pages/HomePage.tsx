@@ -70,7 +70,7 @@ const HomePage: React.FC = () => {
         </View>
       </View>
       <View style={styles.recentExpensesContainer}>
-        <Text style={styles.recentExpensesText}>Recent Expenses of Past 7 records:</Text>
+        <Text style={styles.recentExpensesText}>Recent Expenses of Past 10 records:</Text>
       </View>
       <FlatList
         data={expenses}

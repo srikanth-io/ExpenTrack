@@ -33,7 +33,7 @@ export const initializeDatabase = async (): Promise<void> => {
         amount REAL NOT NULL
       );
     `);
-    
+
     const result = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
     if (!result) {
       await db.runAsync('INSERT INTO balance (id, amount) VALUES (1, 0)');
@@ -75,7 +75,7 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
 export const getRecentExpenses = async (): Promise<type.Expense[]> => {
   try {
     const db = await dbPromise;
-    const recentExpenses = await db.getAllAsync<type.Expense>('SELECT * FROM expenses ORDER BY id DESC LIMIT 7');
+    const recentExpenses = await db.getAllAsync<type.Expense>('SELECT * FROM expenses ORDER BY id DESC LIMIT 10');
     return recentExpenses;
   } catch (error) {
     console.error('Error retrieving recent expenses:', error);

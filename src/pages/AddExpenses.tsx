@@ -5,7 +5,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { initializeDatabase, saveExpense, saveBalance, getBalance } from '../utils/Database/db';
-import HomePage from './HomePage';
 
 
 interface AddExpensesNavigationProp {
@@ -140,7 +139,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       Alert.alert('Success', 'Expense saved successfully!', [
         {
           text: 'OK',
-          onPress: () => navigation.navigate(HomePage), 
+          onPress: () => navigation.navigate('Home'), 
         },
       ]);
 
