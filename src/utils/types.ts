@@ -12,11 +12,6 @@ export interface Expense {
     image?: string;
   }
   
-  interface Balance {
-    id: number;
-    amount: number;
-    Balance : number;
-  }
   
   export type SQLiteResult = {
     changes: {

@@ -6,8 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import { fonts } from '../utils/fonts';
 
 interface Expense {
-  id?: string | number ;
-  itemName?: string ;
+  id?: string | number;
+  itemName?: string;
   date?: string | null;
   expenseAmount?: number;
   description?: string;
@@ -15,9 +15,9 @@ interface Expense {
 
 const AllExpensesPage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [balance, setBalance] = useState<number>(0);
-  const navigation = useNavigation<any>(); 
-  
+  const [balance, setBalance] = useState<number>(0.0);
+  const navigation = useNavigation<any>();
+
   useEffect(() => {
     const fetchExpenses = async () => {
       try {
@@ -37,15 +37,24 @@ const AllExpensesPage: React.FC = () => {
       }
     };
 
+    // Fetch data initially
     fetchExpenses();
     fetchBalance();
+    
+    // Set up polling
+    const intervalId = setInterval(async () => {
+      await fetchExpenses();
+      await fetchBalance();
+    }, 1000); // Poll every second
+
+    return () => clearInterval(intervalId); // Clean up on component unmount
   }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>Remaining Balance: ₹ {balance}</Text>
+          <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
         </View>
       </View>
       <View style={styles.recentExpensesContainer}>
@@ -66,7 +75,7 @@ const AllExpensesPage: React.FC = () => {
                 <Text style={styles.expenseText}>Date: {item.date}</Text>
               )}
               {item.expenseAmount !== undefined && (
-                <Text style={styles.expenseText}>Expense Amount: {item.expenseAmount}</Text>
+                <Text style={styles.expenseText}>Expense Amount: ₹ {item.expenseAmount.toFixed(2)}</Text>
               )}
               {item.description && (
                 <Text style={styles.expenseText}>Description: {item.description}</Text>
@@ -74,7 +83,7 @@ const AllExpensesPage: React.FC = () => {
             </View>
           </TouchableOpacity>
         )}
-        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+        keyExtractor={(item, index) => index.toString()}
       />
     </View>
   );

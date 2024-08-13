@@ -33,6 +33,12 @@ export const initializeDatabase = async (): Promise<void> => {
         amount REAL NOT NULL
       );
     `);
+    
+    const result = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
+    if (!result) {
+      await db.runAsync('INSERT INTO balance (id, amount) VALUES (1, 0)');
+    }
+
 
     console.log('Database initialized and tables created successfully.');
   } catch (error) {
@@ -118,8 +124,8 @@ export const getBalance = async (): Promise<number> => {
 export const saveBalance = async (amount: number): Promise<void> => {
   try {
     const db = await dbPromise;
-    const nonNegativeAmount = ensureNonNegative(amount); 
-    const existingBalance = await db.getFirstAsync<Balance>('SELECT * FROM balance WHERE id = 1');
+    const nonNegativeAmount = Math.max(0, amount); 
+    const existingBalance = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
 
     if (existingBalance) {
       await db.runAsync('UPDATE balance SET amount = ? WHERE id = 1', nonNegativeAmount);
@@ -135,7 +141,7 @@ export const saveBalance = async (amount: number): Promise<void> => {
 };
 
 // Function to update an expense
-export const updateExpense = async (expense: type.Expense): Promise<void> => {
+export const updateExpense = async (expense: type.Expense ): Promise<void> => {
   try {
     const db = await dbPromise;
     await db.runAsync(
@@ -154,3 +160,5 @@ export const updateExpense = async (expense: type.Expense): Promise<void> => {
     throw error;
   }
 };
+
+

@@ -5,10 +5,16 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { initializeDatabase, saveExpense, saveBalance, getBalance } from '../utils/Database/db';
+import HomePage from './HomePage';
+
+
+interface AddExpensesNavigationProp {
+  navigation: any; 
+}
 
 const MIN_ITEM_NAME_LENGTH = 2;
 
-const AddExpenses = () => {
+const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
   const now = new Date();
   const [itemName, setItemName] = useState('');
   const [date, setDate] = useState(new Date());
@@ -21,6 +27,7 @@ const AddExpenses = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [newBalance, setNewBalance] = useState('');
   const displayDate = formattedDate || 'Select Date';
+
 
   useEffect(() => {
     const initDatabase = async () => {
@@ -89,6 +96,8 @@ const AddExpenses = () => {
     }
   };
 
+  console.log(balance);
+
   const handleSave = async () => {
     // Check if itemName is valid
     if (itemName.length < MIN_ITEM_NAME_LENGTH) {
@@ -128,7 +137,12 @@ const AddExpenses = () => {
       await saveExpense(expense);
 
       // Show success message
-      Alert.alert('Success', 'Expense saved successfully!');
+      Alert.alert('Success', 'Expense saved successfully!', [
+        {
+          text: 'OK',
+          onPress: () => navigation.navigate(HomePage), 
+        },
+      ]);
 
       // Reset the form
       setItemName('');

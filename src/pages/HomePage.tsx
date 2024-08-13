@@ -8,13 +8,13 @@ import { fonts } from '../utils/fonts';
 interface Expense {
   id?: number;
   itemName: string;
-  date?: string;
+  date?: string | null;
   expenseAmount: number;
   description?: string;
   image?: string;
 }
-  
-interface item {
+
+interface Item {
   id?: undefined;
   name: string;
 }
@@ -24,13 +24,11 @@ export type RootStackParamList = {
   EditExpense: { expense: Expense };
 };
 
-
-
 type HomePageNavigationProp = NavigationProp<RootStackParamList, 'HomePage'>;
 
 const HomePage: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [balance, setBalance] = useState<number>(0);
+  const [balance, setBalance] = useState<number>(0.0);
   const navigation = useNavigation<HomePageNavigationProp>(); 
 
   useEffect(() => {
@@ -54,13 +52,21 @@ const HomePage: React.FC = () => {
 
     fetchExpenses();
     fetchBalance();
+    
+    // Set up polling
+    const intervalId = setInterval(async () => {
+      await fetchExpenses();
+      await fetchBalance();
+    }, 1000); // Poll every second
+
+    return () => clearInterval(intervalId); // Clean up on component unmount
   }, []);
 
   return (
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>Remaining Balance: ₹  {balance}</Text>
+          <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
         </View>
       </View>
       <View style={styles.recentExpensesContainer}>
@@ -81,7 +87,7 @@ const HomePage: React.FC = () => {
                 <Text style={styles.expenseText}>Date: {item.date}</Text>
               ) : null}
               {item.expenseAmount ? (
-                <Text style={styles.expenseText}>Expense Amount: {item.expenseAmount}</Text>
+                <Text style={styles.expenseText}>Expense Amount: {item.expenseAmount.toFixed(2)}</Text>
               ) : null}
               {item.description ? (
                 <Text style={styles.expenseText}>Description: {item.description}</Text>
@@ -89,9 +95,7 @@ const HomePage: React.FC = () => {
             </View>
           </TouchableOpacity>
         )}
-        keyExtractor={(item, index) => index.toString()}
-        // keyExtractor={(item) => item.id.toString()}
-        
+        keyExtractor={(item) => item.id?.toString() ?? '0'}
       />
     </View>
   );
@@ -134,7 +138,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsRegular,
   },
   expenseContainer: {
-    backgroundColor:Colors.Grey,
+    backgroundColor: Colors.Grey,
     padding: 10,
     borderRadius: 10,
     marginBottom: 20,
