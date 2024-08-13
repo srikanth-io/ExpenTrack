@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Alert, Platform, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Alert,
+  Platform,
+  StyleSheet,
+  KeyboardAvoidingView,
+  ScrollView
+} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
@@ -14,7 +25,6 @@ export interface Expense {
   description?: string;
   image?: string;
 }
-
 
 interface EditExpenseProps {
   route: {
@@ -111,76 +121,85 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.balancePreview}>
-        <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
-      </View>
-      <View style={styles.formContainer}>
-        <Text style={styles.label}>Item Name:</Text>
-        <TextInput
-          style={styles.input}
-          value={itemName}
-          onChangeText={setItemName}
-        />
-        <View style={styles.space} />
-
-        <Text style={styles.label}>Date:</Text>
-        <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
-          <Text style={styles.datePickerText}>{formattedDate || 'Select Date'}</Text>
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={date}
-            mode='date'
-            display='default'
-            onChange={onChangeDate}
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={100} // Adjust this value if needed
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.balancePreview}>
+          <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
+        </View>
+        <View style={styles.formContainer}>
+          <Text style={styles.label}>Item Name:</Text>
+          <TextInput
+            style={styles.input}
+            value={itemName}
+            onChangeText={setItemName}
           />
-        )}
-        <View style={styles.space} />
+          <View style={styles.space} />
 
-        <Text style={styles.label}>Expense Amount:</Text>
-        <TextInput
-          style={styles.input}
-          value={expenseAmount}
-          onChangeText={text => setExpenseAmount(text.replace(/[^0-9.]/g, ''))} 
-          keyboardType='number-pad'
-          placeholder='₹0'
-        />
-        <View style={styles.space} />
-
-        <Text style={styles.label}>Description:</Text>
-        <TextInput
-          style={styles.inputDes}
-          value={description}
-          onChangeText={setDescription}
-          multiline={true}
-        />
-        <View style={styles.space} />
-
-        <TouchableOpacity style={styles.ButtonContainer}>
-          <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
-            <Text style={styles.imagePickerText}>Add Picture</Text>
-            {image && (
-              <Image source={{ uri: image.uri }} style={styles.image} />
-            )}
+          <Text style={styles.label}>Date:</Text>
+          <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
+            <Text style={styles.datePickerText}>{formattedDate || 'Select Date'}</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Save</Text>
+          {showDatePicker && (
+            <DateTimePicker
+              value={date}
+              mode='date'
+              display='default'
+              onChange={onChangeDate}
+            />
+          )}
+          <View style={styles.space} />
+
+          <Text style={styles.label}>Expense Amount:</Text>
+          <TextInput
+            style={styles.input}
+            value={expenseAmount}
+            onChangeText={text => setExpenseAmount(text.replace(/[^0-9.]/g, ''))} 
+            keyboardType='number-pad'
+            placeholder='₹0'
+          />
+          <View style={styles.space} />
+
+          <Text style={styles.label}>Description:</Text>
+          <TextInput
+            style={styles.inputDes}
+            value={description}
+            onChangeText={setDescription}
+            multiline={true}
+          />
+          <View style={styles.space} />
+
+          <TouchableOpacity style={styles.ButtonContainer}>
+            <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
+              <Text style={styles.imagePickerText}>Add Picture</Text>
+              {image && (
+                <Image source={{ uri: image.uri }} style={styles.image} />
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+              <Text style={styles.saveButtonText}>Save</Text>
+            </TouchableOpacity>
           </TouchableOpacity>
-        </TouchableOpacity>
-      </View>
-    </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    top: 30,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    padding: 20,
   },
   balancePreview: {
     position: 'absolute',
-    top: 0,
+    top: 20,
     right: 20,
     backgroundColor: Colors.Grey,
     padding: 15,
@@ -193,8 +212,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   formContainer: {
-    padding: 20,
-    top: 60,
+    marginTop: 70, 
   },
   label: {
     fontFamily: fonts.PoppinsRegular,
@@ -209,6 +227,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 10,
     borderRadius: 15,
+    fontSize: 18,
   },
   inputDes: {
     height: 150,
@@ -218,6 +237,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 10,
     borderRadius: 15,
+    fontSize: 18,
   },
   space: {
     height: 15,
@@ -237,7 +257,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-evenly',
-    top: 10,
+    marginTop: 10,
   },
   imagePicker: {
     backgroundColor: Colors.Gray,

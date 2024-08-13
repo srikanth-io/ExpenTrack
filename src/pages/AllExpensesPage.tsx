@@ -6,9 +6,9 @@ import { useNavigation } from '@react-navigation/native';
 import { fonts } from '../utils/fonts';
 
 interface Expense {
-  id?: string | number;
-  itemName?: string;
-  date?: string;
+  id?: string | number ;
+  itemName?: string ;
+  date?: string | null;
   expenseAmount?: number;
   description?: string;
 }

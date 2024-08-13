@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, Modal, Platform, KeyboardAvoidingView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, Modal, Platform, KeyboardAvoidingView, ScrollView } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
@@ -8,11 +8,11 @@ import { initializeDatabase, saveExpense, saveBalance, getBalance } from '../uti
 
 const MIN_ITEM_NAME_LENGTH = 2;
 
-
 const AddExpenses = () => {
+  const now = new Date();
   const [itemName, setItemName] = useState('');
   const [date, setDate] = useState(new Date());
-  const [formattedDate, setFormattedDate] = useState('');
+  const [formattedDate, setFormattedDate] = useState(now.toLocaleDateString());
   const [expenseAmount, setExpenseAmount] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState<any>(null);
@@ -20,6 +20,7 @@ const AddExpenses = () => {
   const [balance, setBalance] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [newBalance, setNewBalance] = useState('');
+  const displayDate = formattedDate || 'Select Date';
 
   useEffect(() => {
     const initDatabase = async () => {
@@ -124,7 +125,6 @@ const AddExpenses = () => {
     };
 
     try {
-
       await saveExpense(expense);
 
       // Show success message
@@ -133,7 +133,7 @@ const AddExpenses = () => {
       // Reset the form
       setItemName('');
       setDate(new Date());
-      setFormattedDate('');
+      setFormattedDate(now.toLocaleDateString()); // Reset to current date
       setExpenseAmount('');
       setDescription('');
       setImage(null);
@@ -144,10 +144,14 @@ const AddExpenses = () => {
   };
 
   const onChangeDate = (event: any, selectedDate?: Date) => {
-    const currentDate = selectedDate || date;
     setShowDatePicker(false);
-    setDate(currentDate);
-    setFormattedDate(currentDate.toLocaleDateString());
+    
+    // Check if user confirmed the selection
+    if (event.type === 'set' && selectedDate) {
+      setDate(selectedDate);
+      setFormattedDate(selectedDate.toLocaleDateString());
+    }
+    // Do nothing if user canceled the picker
   };
 
   const handleOpenModal = () => setModalVisible(true);
@@ -174,10 +178,11 @@ const AddExpenses = () => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={100} // Adjust this value if needed
     >
-      <View style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.balancePreview}>
-          <Text style={styles.balanceText}>Remaining Balance: ₹{balance.toFixed(2)}</Text>
+          <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
           <TouchableOpacity style={styles.addBalanceButton} onPress={handleOpenModal}>
             <Text style={styles.addBalanceButtonText}>Add Balance</Text>
           </TouchableOpacity>
@@ -189,12 +194,13 @@ const AddExpenses = () => {
             style={styles.input}
             value={itemName}
             onChangeText={setItemName}
+            placeholder='eg : petrol, groceries'
           />
           <View style={styles.space} />
 
           <Text style={styles.label}>Date:</Text>
           <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.datePickerText}>{formattedDate || 'Select Date'}</Text>
+            <Text style={styles.datePickerText}>{displayDate}</Text>
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
@@ -212,7 +218,7 @@ const AddExpenses = () => {
             value={expenseAmount}
             onChangeText={text => setExpenseAmount(text.replace(/[^0-9.]/g, ''))} 
             keyboardType='number-pad'
-            placeholder='₹0'
+            placeholder='₹ 0.0'
           />
           <View style={styles.space} />
 
@@ -222,6 +228,7 @@ const AddExpenses = () => {
             value={description}
             onChangeText={setDescription}
             multiline
+            placeholder='write something here.....'
           />
           <View style={styles.space} />
 
@@ -266,7 +273,7 @@ const AddExpenses = () => {
             </View>
           </View>
         </Modal>
-      </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 };
@@ -274,11 +281,14 @@ const AddExpenses = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    top: 15,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    padding: 20,
   },
   balancePreview: {
     position: 'absolute',
-    top: 0,
+    top: 20,
     right: 20,
     backgroundColor: Colors.Grey,
     padding: 15,
@@ -304,8 +314,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   formContainer: {
-    padding: 20,
-    top: 90,
+    marginTop: 100,
   },
   label: {
     fontFamily: fonts.PoppinsRegular,
@@ -320,6 +329,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 10,
     borderRadius: 15,
+    fontSize: 18,
   },
   inputDes: {
     height: 150,
@@ -329,6 +339,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     padding: 10,
     borderRadius: 15,
+    fontSize: 18,
   },
   space: {
     height: 15,
