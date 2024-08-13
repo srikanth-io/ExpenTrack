@@ -135,17 +135,17 @@ export const saveBalance = async (amount: number): Promise<void> => {
 };
 
 // Function to update an expense
-export const updateExpense = async (expense: type.Expense ): Promise<void> => {
+export const updateExpense = async (expense: type.Expense): Promise<void> => {
   try {
     const db = await dbPromise;
     await db.runAsync(
       'UPDATE expenses SET itemName = ?, date = ?, expenseAmount = ?, description = ?, image = ? WHERE id = ?',
       expense.itemName,
-      expense.date,
+      expense.date ?? null,
       expense.expenseAmount,
       expense.description ?? null,
       expense.image ?? null,
-      expense.id
+      expense.id ?? null,
     );
 
     console.log('Expense updated successfully!');
