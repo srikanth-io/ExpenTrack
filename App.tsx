@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
-import DashboardPage from './src/pages/DashboardPage';
 import SplashScreen from './src/pages/SplashScreen';
 import TabNavigator from './src/pages/TabNaviagator';
 import AddExpenses from './src/pages/AddExpenses';
@@ -66,6 +65,5 @@ export default function App() {
 }
 
 async function loadFontsAndDependencies() {
-
   await new Promise(resolve => setTimeout(resolve, 3000)); 
 }

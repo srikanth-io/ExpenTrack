@@ -70,17 +70,14 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
           fontFamily: fonts.PoppinsRegular,
         },
         tabBarStyle: {
-          height: 80,
+          height: 70,
           paddingBottom: 10,
-          backgroundColor: Colors.Gray,
-          borderRadius: 15,
-          elevation: 5,
-          maxWidth: 400,
-          bottom: 15,
-          left: 13,
+          backgroundColor: Colors.Background_Color,
+          borderRadius: 20,
+
         },
-        tabBarActiveTintColor: Colors.White,
-        tabBarInactiveTintColor: Colors.AntiqueWhite,
+        tabBarActiveTintColor: Colors.Bottom_color,
+        tabBarInactiveTintColor: Colors.Second_color,
       })}
     >
       <Tab.Screen
@@ -89,6 +86,7 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
         options={{
           headerTitleAlign: 'center',
           headerTitle: 'Home',
+          headerShown : false,
         }}
       />
       <Tab.Screen
@@ -97,6 +95,7 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
         options={{
           headerTitleAlign: 'center',
           headerTitle: 'All Expenses',
+          headerShown : false,
         }}
       />
       <Tab.Screen
@@ -104,7 +103,7 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
         component={AddExpenses}
         options={{
           tabBarIcon: ({ color }) => (
-            <Feather name="plus" size={30} color={Colors.White} />
+            <Feather name="plus" size={30} color={Colors.Bottom_color} />
           ),
           tabBarLabel: '               Add               ',
           tabBarButton: (props) => (
@@ -131,10 +130,8 @@ const TabBarButton: React.FC<TabBarButtonProps> = ({ navigation, ...props }) => 
         height: 80,
         justifyContent: 'center',
         alignItems: 'center',
-        borderRadius: 15,
-        maxWidth: 200,
-        backgroundColor: Colors.BlueViolet,
-        elevation: 5,
+        borderRadius: 20,
+        backgroundColor: Colors.Bottom_color,
         padding: 5,
       }}
       onPress={() => navigation.navigate('AddExpenses')}

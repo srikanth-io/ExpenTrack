@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image} from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getRecentExpenses, getBalance } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
@@ -12,11 +12,6 @@ interface Expense {
   expenseAmount: number;
   description?: string;
   image?: string;
-}
-
-interface Item {
-  id?: undefined;
-  name: string;
 }
 
 export type RootStackParamList = {
@@ -66,11 +61,29 @@ const HomePage: React.FC = () => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View style={styles.balanceContainer}>
-          <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
+          <Text style={styles.balanceText}>Amount Balance</Text>
+          <Text style={styles.balanceTextAmount}>₹ {balance.toFixed(2)}</Text>
         </View>
       </View>
+        <View style = {styles.amountsContainer}>
+          <TouchableOpacity style = {styles.IncExpContainer}>
+            <Image style ={{ tintColor: Colors.Third_color, height: 50, width: 50 }} source={require('../../assets/CustomIcons/income.png') }/>
+            <View>
+            <Text style={styles.IncomeAmountsText}>Income</Text>
+            <Text style={styles.IncomeAmounts}>₹ 1000</Text>
+            </View>
+            
+          </TouchableOpacity>
+          <TouchableOpacity style = {styles.IncExpContainer}>
+            <Image style ={{ tintColor: Colors.Top_color, height: 50, width: 50 }} source={require('../../assets/CustomIcons/expense.png')} />
+            <View>
+            <Text style ={styles.ExpenseAmountText}>Expense</Text>
+            <Text style ={styles.ExpenseAmount}>₹ 3000</Text>    
+            </View>
+          </TouchableOpacity>
+        </View>
       <View style={styles.recentExpensesContainer}>
-        <Text style={styles.recentExpensesText}>Recent Expenses of Past 10 records:</Text>
+        <Text style={styles.recentExpensesText}>Recent Expenses</Text>
       </View>
       <FlatList
         data={expenses}
@@ -105,6 +118,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor : Colors.Dark75,
   },
   headerContainer: {
     flexDirection: 'row',
@@ -113,7 +127,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     height: 100,
-    backgroundColor: Colors.Gray,
+    top : 10,
+    marginTop : 20,
+    
   },
   balanceContainer: {
     flex: 1,
@@ -121,34 +137,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 10,
   },
-  balanceText: {
-    fontSize: 18,
-    color: Colors.White,
+  balanceTextAmount: {
+    fontSize: 40,
+    color: Colors.Second_color,
     fontFamily: fonts.PoppinsBold,
   },
+  balanceText: {
+    fontSize: 18,
+    color: Colors.Third_color,
+    fontFamily: fonts.PoppinsRegular,
+  },
+  amountsContainer : {
+    flexDirection : 'row',
+    gap : 20,
+    alignItems : 'center',
+    justifyContent: 'space-evenly', 
+    marginBottom : 20,
+  },
+  IncExpContainer: {
+    flexDirection : 'row',
+    gap : 10,
+    backgroundColor : Colors.Second_color,
+    padding :15,
+    borderRadius : 20,
+  },
+  IncomeAmountsText :{ 
+    fontSize : 18,
+    color : Colors.Background_Color,
+  },
+  IncomeAmounts : {
+    fontSize : 25,
+  },
+  ExpenseAmountText :{ 
+    fontSize : 18,
+    color : Colors.Background_Color,
+  },
+  ExpenseAmount : {
+    fontSize : 25,
+  },
   recentExpensesContainer: {
-    backgroundColor: Colors.Gray,
     padding: 10,
-    borderRadius: 15,
-    marginBottom: 20,
+    marginBottom: 2,
   },
   recentExpensesText: {
-    fontSize: 18,
-    color: Colors.White, 
+    fontSize: 25,
+    color: Colors.Bottom_color,
     fontFamily: fonts.PoppinsRegular,
   },
   expenseContainer: {
-    backgroundColor: Colors.Grey,
+    backgroundColor: Colors.Third_color,
     padding: 10,
-    borderRadius: 10,
-    marginBottom: 20,
+    borderRadius: 20,
+    marginBottom: 13,
   },
   expenseInfoContainer: {
     flex: 1,
   },
   expenseText: {
     fontSize: 16,
-    color: Colors.White,
+    color: Colors.Background_Color,
     fontFamily: fonts.PoppinsRegular,
   },
 });
