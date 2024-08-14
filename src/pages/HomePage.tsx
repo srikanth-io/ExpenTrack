@@ -5,7 +5,7 @@ import { getRecentExpenses, getBalance } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import IncomeAndExpense from '../components/IncomeAndExpense';
-import Profile from '../components/profile';
+import Profile from '../components/profile&Notification';
 
 interface Expense {
   id?: number;
@@ -68,7 +68,9 @@ const HomePage: React.FC = () => {
         </View>
       </View>
         <IncomeAndExpense/>
-        <Profile/>
+        <View style={{top : -190, left : 10, }}>
+        <Profile />
+        </View>
       <View style={styles.recentExpensesContainer}>
         <Text style={styles.recentExpensesText}>Recent Expenses</Text>
       </View>
