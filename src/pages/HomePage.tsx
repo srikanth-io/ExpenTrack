@@ -4,6 +4,8 @@ import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { getRecentExpenses, getBalance } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
+import IncomeAndExpense from '../components/IncomeAndExpense';
+import Profile from '../components/profile';
 
 interface Expense {
   id?: number;
@@ -65,23 +67,8 @@ const HomePage: React.FC = () => {
           <Text style={styles.balanceTextAmount}>₹ {balance.toFixed(2)}</Text>
         </View>
       </View>
-        <View style = {styles.amountsContainer}>
-          <TouchableOpacity style = {styles.IncExpContainer}>
-            <Image style ={{ tintColor: Colors.Third_color, height: 50, width: 50 }} source={require('../../assets/CustomIcons/income.png') }/>
-            <View>
-            <Text style={styles.IncomeAmountsText}>Income</Text>
-            <Text style={styles.IncomeAmounts}>₹ 1000</Text>
-            </View>
-            
-          </TouchableOpacity>
-          <TouchableOpacity style = {styles.IncExpContainer}>
-            <Image style ={{ tintColor: Colors.Top_color, height: 50, width: 50 }} source={require('../../assets/CustomIcons/expense.png')} />
-            <View>
-            <Text style ={styles.ExpenseAmountText}>Expense</Text>
-            <Text style ={styles.ExpenseAmount}>₹ 3000</Text>    
-            </View>
-          </TouchableOpacity>
-        </View>
+        <IncomeAndExpense/>
+        <Profile/>
       <View style={styles.recentExpensesContainer}>
         <Text style={styles.recentExpensesText}>Recent Expenses</Text>
       </View>
@@ -94,16 +81,13 @@ const HomePage: React.FC = () => {
           >
             <View style={styles.expenseInfoContainer}>
               {item.itemName ? (
-                <Text style={styles.expenseText}>Item: {item.itemName}</Text>
+                <Text style={styles.expenseText}>{item.itemName}</Text>
               ) : null}
               {item.date ? (
-                <Text style={styles.expenseText}>Date: {item.date}</Text>
+                <Text style={styles.expenseText}>{item.date}</Text>
               ) : null}
               {item.expenseAmount ? (
-                <Text style={styles.expenseText}>Expense Amount: {item.expenseAmount.toFixed(2)}</Text>
-              ) : null}
-              {item.description ? (
-                <Text style={styles.expenseText}>Description: {item.description}</Text>
+                <Text style={styles.expenseText}>{item.expenseAmount.toFixed(2)}</Text>
               ) : null}
             </View>
           </TouchableOpacity>
@@ -118,7 +102,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor : Colors.Dark75,
+    backgroundColor : Colors.Dark100,
   },
   headerContainer: {
     flexDirection: 'row',
@@ -146,34 +130,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: Colors.Third_color,
     fontFamily: fonts.PoppinsRegular,
-  },
-  amountsContainer : {
-    flexDirection : 'row',
-    gap : 20,
-    alignItems : 'center',
-    justifyContent: 'space-evenly', 
-    marginBottom : 20,
-  },
-  IncExpContainer: {
-    flexDirection : 'row',
-    gap : 10,
-    backgroundColor : Colors.Second_color,
-    padding :15,
-    borderRadius : 20,
-  },
-  IncomeAmountsText :{ 
-    fontSize : 18,
-    color : Colors.Background_Color,
-  },
-  IncomeAmounts : {
-    fontSize : 25,
-  },
-  ExpenseAmountText :{ 
-    fontSize : 18,
-    color : Colors.Background_Color,
-  },
-  ExpenseAmount : {
-    fontSize : 25,
   },
   recentExpensesContainer: {
     padding: 10,
