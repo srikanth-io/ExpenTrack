@@ -46,10 +46,6 @@ export const initializeDatabase = async (): Promise<void> => {
   }
 };
 
-// Ensure that balance is non-negative
-const ensureNonNegative = (amount: number): number => {
-  return Math.max(0, amount);
-};
 
 // Function to save an expense
 export const saveExpense = async (expense: type.Expense): Promise<void> => {
