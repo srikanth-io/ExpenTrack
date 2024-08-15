@@ -143,7 +143,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
               style={styles.input}
               value={itemName}
               onChangeText={setItemName}
-              placeholder="Enter item name"
+              placeholder="Name"
             />
           </View>
 
@@ -160,7 +160,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
                 mode="date"
                 display="default"
                 onChange={onChangeDate}
-                maximumDate={now} // Set the maximum date to today
+                maximumDate={now} 
               />
             )}
           </View>
@@ -230,32 +230,32 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 55,
-    backgroundColor: Colors.Light_Teal,
+    backgroundColor: Colors.Pale_Teal,
     borderRadius: 15,
     paddingHorizontal: 10,
     fontSize: 16,
-    fontFamily: fonts.PoppinsRegular,
-    color: Colors.Cool_Blue,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Teal,
   },
   DesInput: {
     height: 150,
-    backgroundColor: Colors.Light_Teal,
+    backgroundColor: Colors.Pale_Teal,
     borderRadius: 15,
     fontSize: 16,
-    fontFamily: fonts.PoppinsRegular,
-    color: Colors.Cool_Blue,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Teal,
     textAlignVertical: 'top',
     padding: 10,
   },
   datePickerButton: {
-    backgroundColor: Colors.Light_Teal,
+    backgroundColor: Colors.Pale_Teal,
     padding: 15,
     borderRadius: 15,
   },
   datePickerText: {
-    fontFamily: fonts.PoppinsRegular,
+    fontFamily: fonts.PoppinsSemiBold,
     fontSize: 16,
-    color: Colors.Dark_Green,
+    color: Colors.Dark_Teal,
   },
   imagePickerButton: {
     backgroundColor: Colors.Light_Teal,
@@ -267,7 +267,8 @@ const styles = StyleSheet.create({
   },
   imagePickerText: {
     fontFamily: fonts.PoppinsSemiBold,
-    fontSize: 16,
+    fontSize: 18,
+    color: Colors.Dark_Teal,
   },
   selectedImage: {
     width: 100,

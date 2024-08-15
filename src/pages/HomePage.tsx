@@ -32,10 +32,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     borderRadius: 15,
     alignItems: 'center',
+    top : 10,
     marginBottom: 20,
     height: 100,
-    top : 10,
-    marginTop : 20,
+    marginTop : 30,
   },
 });
 

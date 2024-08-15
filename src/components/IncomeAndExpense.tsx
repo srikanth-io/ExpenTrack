@@ -7,20 +7,22 @@ import { fonts } from '../utils/fonts'
 const IncomeAndExpense = () => {
   return (
     <View style = {styles.amountsContainer}>
-        <TouchableOpacity style = {styles.IncExpContainer}>
-        <Image style ={{ tintColor: Colors.Third_color, height: 50, width: 50 }} source={require('../../assets/CustomIcons/income.png') }/>
+      <TouchableOpacity style = {styles.IncExpContainer}>
+        <TouchableOpacity style = {styles.IncContainer}>
+        <Image style ={{ tintColor: Colors.Teal, height: 50, width: 50 }} source={require('../../assets/CustomIcons/income.png') }/>
         <View>
         <Text style={styles.IncomeAmountsText}>Income</Text>
         <Text style={styles.IncomeAmounts}>₹ 1000</Text>
         </View>
         
         </TouchableOpacity>
-        <TouchableOpacity style = {styles.IncExpContainer}>
-        <Image style ={{ tintColor: Colors.Top_color, height: 50, width: 50 }} source={require('../../assets/CustomIcons/expense.png')} />
+        <TouchableOpacity style = {styles.ExpContainer}>
+        <Image style ={{ tintColor: Colors.Red, height: 50, width: 50 }} source={require('../../assets/CustomIcons/expense.png')} />
         <View>
         <Text style ={styles.ExpenseAmountText}>Expense</Text>
         <Text style ={styles.ExpenseAmount}>₹ 3000</Text>    
         </View>
+        </TouchableOpacity>
         </TouchableOpacity>
     </View>
   )
@@ -29,34 +31,53 @@ const IncomeAndExpense = () => {
 export default IncomeAndExpense
 
 const styles = StyleSheet.create({
-    amountsContainer : {
+      amountsContainer : {
         flexDirection : 'row',
-        gap : 20,
         alignItems : 'center',
-        justifyContent: 'space-evenly', 
-        marginBottom : 20,
+        justifyContent: 'space-around', 
       },
-    IncExpContainer: {
+      IncExpContainer: {
         flexDirection : 'row',
-        gap : 10,
-        backgroundColor : Colors.Second_color,
-        padding :15,
+        justifyContent : 'center',
+        alignItems : 'center',
+        padding : 20,
+        gap : 30,
+        borderRadius : 20,
+      },
+      IncContainer : {
+        flexDirection : 'row',
+        backgroundColor : Colors.Pale_Teal,
+        justifyContent : 'center',
+        padding : 15,
+        gap : 5,
+        borderRadius : 20,
+      },
+      ExpContainer : {
+        flexDirection : 'row',
+        backgroundColor : Colors.Light_Red,
+        justifyContent : 'center',
+        padding : 15,
+        gap : 5,
         borderRadius : 20,
       },
       IncomeAmountsText :{ 
         fontSize : 18,
-        color : Colors.Bottom_color,
+        color : Colors.Teal,
+        fontFamily : fonts.PoppinsSemiBold,
       },
       IncomeAmounts : {
         fontSize : 25,
-        color : Colors.Dark100,
+        color : Colors.Teal,
         fontFamily : fonts.PoppinsBold,
       },
       ExpenseAmountText :{ 
         fontSize : 18,
-        color : Colors.Background_Color,
+        color : Colors.Red,
+        fontFamily : fonts.PoppinsSemiBold,
       },
       ExpenseAmount : {
         fontSize : 25,
+        color : Colors.Red,
+        fontFamily : fonts.PoppinsBold,
       },
 })

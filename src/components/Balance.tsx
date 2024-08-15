@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { getBalance } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
@@ -30,10 +30,10 @@ const Balance: React.FC = () => {
   };
 
   return (
-    <View style={styles.balanceContainer}>
+    <TouchableOpacity style={styles.balanceContainer}>
       <Text style={styles.balanceText}>Amount Balance</Text>
       <Text style={styles.balanceTextAmount}>₹ {balance.toFixed(2)}</Text>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -42,6 +42,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 5,
     alignItems: 'center',
+    marginTop : -10,
   },
   balanceTextAmount: {
     fontSize: 40,
@@ -50,6 +51,7 @@ const styles = StyleSheet.create({
   },
   balanceText: {
     fontSize: 18,
+    top : 10,
     color: Colors.Light_Teal,
     fontFamily: fonts.PoppinsRegular,
   },
