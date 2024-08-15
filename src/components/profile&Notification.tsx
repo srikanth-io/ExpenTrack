@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import React from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Colors } from '../utils/colors';
+import Balance from './Balance';
 
 const Profile = () => {
   return (
@@ -47,4 +48,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.Dark_Teal,
     borderWidth: 2,
   },
+  iconContainer : {
+  }
 });
