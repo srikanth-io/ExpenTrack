@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import SplashScreen from './src/pages/SplashScreen';
-import TabNavigator from './src/pages/TabNaviagator';
+import TabNavigator from './src/pages/TabNavigator';
 import AddExpenses from './src/pages/AddExpenses';
 import { Colors } from './src/utils/colors';
 import { fonts } from './src/utils/fonts';
@@ -47,7 +47,7 @@ export default function App() {
       <Stack.Navigator initialRouteName="SplashScreen"  screenOptions={{
                     headerTitleAlign: 'center',  
                     headerStyle: {
-                        backgroundColor: Colors.White, 
+                        backgroundColor: Colors.Background_Color, 
                     },
                     headerTitleStyle: {
                         fontFamily : fonts.PoppinsRegular,

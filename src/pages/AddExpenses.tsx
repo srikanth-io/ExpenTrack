@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -10,12 +10,23 @@ import {
   Platform,
   KeyboardAvoidingView,
   ScrollView,
-} from "react-native";
-import * as ImagePicker from "expo-image-picker";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Colors } from "../utils/colors";
-import { fonts } from "../utils/fonts";
-import { initializeDatabase, saveExpense } from "../utils/Database/db";
+  Modal,
+  FlatList,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import { Colors } from '../utils/colors';
+import { fonts } from '../utils/fonts';
+import { Feather } from '@expo/vector-icons';
+import { initializeDatabase, saveExpense } from '../utils/Database/db';
+import Balance from '../components/Balance';
+
+interface Category {
+  label: string;
+  value: string | null;
+}
 
 interface AddExpensesNavigationProp {
   navigation: any;
@@ -24,23 +35,36 @@ interface AddExpensesNavigationProp {
 const MIN_ITEM_NAME_LENGTH = 2;
 
 const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
+  const categories: Category[] = [
+    { label: 'None', value: null },
+    { label: 'Food', value: 'food' },
+    { label: 'Transport', value: 'transport' },
+    { label: 'Income', value: 'income' },
+    { label: 'Petrol', value: 'Petrol' },
+    { label: 'Groceries', value: 'Groceries' },
+    { label: 'Snacks', value: 'Snacks' },
+    { label: 'Festival', value: 'Festival' },
+    { label: 'Others', value: 'Others' },
+  ];
 
   const formatDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, "0");
-    const month = String(date.getMonth() + 1).padStart(2, "0"); 
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
     const year = date.getFullYear();
     return `${day}-${month}-${year}`;
   };
 
   const now = new Date();
-  const [itemName, setItemName] = useState("");
+  const [itemName, setItemName] = useState('');
   const [date, setDate] = useState(now);
   const [formattedDate, setFormattedDate] = useState(formatDate(now));
-  const displayDate = formattedDate || "Select Date";
-  const [expenseAmount, setExpenseAmount] = useState("");
-  const [description, setDescription] = useState("");
+  const displayDate = formattedDate || 'Select Date';
+  const [expenseAmount, setExpenseAmount] = useState('');
+  const [description, setDescription] = useState('');
   const [image, setImage] = useState<any>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const handleImagePick = async () => {
     try {
@@ -55,28 +79,33 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
         setImage(result.assets[0]);
       }
     } catch (error) {
-      console.error("Error picking image:", error);
-      Alert.alert("Error", "Failed to pick image.");
+      console.error('Error picking image:', error);
+      Alert.alert('Error', 'Failed to pick image.');
     }
   };
 
   const handleSave = async () => {
     if (itemName.length < MIN_ITEM_NAME_LENGTH) {
       Alert.alert(
-        "Validation Error",
+        'Validation Error',
         `Item name must contain at least ${MIN_ITEM_NAME_LENGTH} characters.`
       );
       return;
     }
 
     if (!date) {
-      Alert.alert("Validation Error", "Please select a date.");
+      Alert.alert('Validation Error', 'Please select a date.');
+      return;
+    }
+
+    if (!selectedCategory) {
+      Alert.alert('Validation Error', 'Please select a category.');
       return;
     }
 
     const expenseAmountValue = parseFloat(expenseAmount);
     if (isNaN(expenseAmountValue) || expenseAmountValue <= 0) {
-      Alert.alert("Validation Error", "Expense amount must be greater than 0.");
+      Alert.alert('Validation Error', 'Expense amount must be greater than 0.');
       return;
     }
 
@@ -85,39 +114,41 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       date: formattedDate,
       expenseAmount: expenseAmountValue,
       description,
+      category: selectedCategory,
       image: image ? image.uri : null,
     };
 
     try {
-      await initializeDatabase(); // Initialize the database
+      await initializeDatabase();
       await saveExpense(expense);
 
-      Alert.alert("Success", "Expense saved successfully!", [
+      Alert.alert('Success', 'Expense saved successfully!', [
         {
-          text: "OK",
-          onPress: () => navigation.navigate("Home"),
+          text: 'OK',
+          onPress: () => navigation.navigate('Home'),
         },
       ]);
 
-      setItemName("");
+      setItemName('');
       setDate(now);
       setFormattedDate(formatDate(now));
-      setExpenseAmount("");
-      setDescription("");
+      setExpenseAmount('');
+      setDescription('');
       setImage(null);
+      setSelectedCategory(null);
     } catch (error) {
-      console.error("Error saving expense:", error);
-      Alert.alert("Error", "Failed to save expense.");
+      console.error('Error saving expense:', error);
+      Alert.alert('Error', 'Failed to save expense.');
     }
   };
 
   const onChangeDate = (event: any, selectedDate?: Date) => {
     setShowDatePicker(false);
 
-    if (event.type === "set" && selectedDate) {
+    if (event.type === 'set' && selectedDate) {
       // Prevent selecting future dates
       if (selectedDate > now) {
-        Alert.alert("Invalid Date", "Future dates are not allowed.");
+        Alert.alert('Invalid Date', 'Future dates are not allowed.');
         return;
       }
       setDate(selectedDate);
@@ -127,16 +158,22 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
 
   const handleDatePickerPress = () => setShowDatePicker(true);
 
+  const handleSelectCategory = (value: string | null) => {
+    setSelectedCategory(value);
+    setModalVisible(false);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
+
   return (
     <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    style={styles.container}
+    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.RemainingBalance}>
-          <Text>Remaining Balance</Text>
-          <View style={styles.RemainingBalanceAmount}></View>
-        </View>
+      <Balance/>
         <View style={styles.formContainer}>
           <View style={styles.fieldContainer}>
             <TextInput
@@ -146,7 +183,51 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
               placeholder="Name"
             />
           </View>
-
+          <View style={styles.fieldContainer}>
+            <TouchableOpacity
+              style={styles.pickerButton}
+              onPress={() => setModalVisible(true)}
+            >
+              <Text style={styles.pickerButtonText}>
+                {selectedCategory
+                  ? categories.find(cat => cat.value === selectedCategory)?.label
+                  : 'Select Category'}
+              </Text>
+              <Feather name="chevron-down" size={24} color={Colors.Dark_Teal} />
+            </TouchableOpacity>
+            <Modal
+              transparent={true}
+              visible={modalVisible}
+              animationType="fade"
+              onRequestClose={handleModalClose}
+            >
+              <TouchableWithoutFeedback onPress={handleModalClose}>
+                <View style={styles.modalContainer}>
+                  <TouchableWithoutFeedback>
+                    <View style={styles.modalContent}>
+                      <FlatList
+                        data={categories}
+                        keyExtractor={(item) => item.value || item.label}
+                        renderItem={({ item }) => (
+                          <TouchableOpacity
+                            style={[
+                              styles.modalItem,
+                              {
+                                backgroundColor: selectedCategory === item.value ? Colors.Light_Teal : Colors.Pale_Teal
+                              }
+                            ]}
+                            onPress={() => handleSelectCategory(item.value)}
+                          >
+                            <Text style={styles.modalItemText}>{item.label}</Text>
+                          </TouchableOpacity>
+                        )}
+                      />
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+          </View>
           <View style={styles.fieldContainer}>
             <TouchableOpacity
               style={styles.datePickerButton}
@@ -160,7 +241,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
                 mode="date"
                 display="default"
                 onChange={onChangeDate}
-                maximumDate={now} 
+                maximumDate={now}
               />
             )}
           </View>
@@ -170,7 +251,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
               style={styles.input}
               value={expenseAmount}
               onChangeText={(text) =>
-                setExpenseAmount(text.replace(/[^0-9.]/g, ""))
+                setExpenseAmount(text.replace(/[^0-9.]/g, ''))
               }
               keyboardType="number-pad"
               placeholder="Expense amount"
@@ -216,14 +297,12 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
     paddingHorizontal: 20,
   },
-  RemainingBalance: {},
-  RemainingBalanceAmount: {},
   formContainer: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
   fieldContainer: {
     marginBottom: 15,
@@ -283,12 +362,48 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Teal,
     padding: 15,
     borderRadius: 20,
-    alignItems: "center",
+    alignItems: 'center',
   },
   buttonText: {
     fontFamily: fonts.PoppinsSemiBold,
     fontSize: 20,
     color: Colors.Background_Color,
+  },
+  pickerButton: {
+    height: 55,
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  pickerButtonText: {
+    fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Green,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    maxHeight: '50%',
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 15,
+    padding: 20,
+  },
+  modalItem: {
+    padding: 15,
+    marginBottom: 5, 
+  },
+  modalItemText: {
+    fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Teal,
   },
 });
 

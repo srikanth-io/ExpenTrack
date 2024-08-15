@@ -7,7 +7,7 @@ import { fonts } from '../utils/fonts'
 const IncomeAndExpense = () => {
   return (
     <View style = {styles.amountsContainer}>
-      <TouchableOpacity style = {styles.IncExpContainer}>
+      <View style = {styles.IncExpContainer}>
         <TouchableOpacity style = {styles.IncContainer}>
         <Image style ={{ tintColor: Colors.Teal, height: 50, width: 50 }} source={require('../../assets/CustomIcons/income.png') }/>
         <View>
@@ -23,7 +23,7 @@ const IncomeAndExpense = () => {
         <Text style ={styles.ExpenseAmount}>₹ 3000</Text>    
         </View>
         </TouchableOpacity>
-        </TouchableOpacity>
+        </View>
     </View>
   )
 }

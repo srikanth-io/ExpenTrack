@@ -19,6 +19,7 @@ export const initializeDatabase = async (): Promise<void> => {
       PRAGMA journal_mode = WAL;
       CREATE TABLE IF NOT EXISTS expenses (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        category TEXT NOT NULL,
         itemName TEXT NOT NULL,
         date TEXT NOT NULL,
         expenseAmount REAL NOT NULL,

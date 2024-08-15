@@ -4,7 +4,8 @@ import '../utils/Database/db';
 export namespace type {
 
 export interface Expense {
-    id?: number;
+    category: any;
+    id?: number | any;
     itemName: string;
     date?: string | undefined | null;
     expenseAmount: number;
