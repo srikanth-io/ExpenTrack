@@ -21,4 +21,28 @@ export const Colors = {
    Red: "#ff0000",               // Red
    Light_Red: "#ffcccc",         // Light Red
    Medium_Red: "#e57373",        // Medium Red
+
+  // Icon Colors
+  Food_Icon: '#FF4500', // OrangeRed
+  Transport_Icon: '#4682B4', // SteelBlue
+  Shopping_Icon: '#32CD32', // LimeGreen
+  Income_Icon: '#004d40', // Dark Teal
+  Entertainment_Icon: '#8A2BE2', // BlueViolet
+  Health_Icon: '#FF1493', // DeepPink
+  Education_Icon: '#00BFFF', // DeepSkyBlue
+  Travel_Icon: '#FFD700', // Gold
+  
+  // Background Colors
+  Food_Background: '#FFE5E5', // LightCoral
+  Transport_Background: '#E0FFFF', // LightCyan
+  Shopping_Background: '#E5FFEC', // HoneyDew
+  Income_Background: '#E0F2F1', // LightTeal
+  Entertainment_Background: '#E6E6FA', // Lavender
+  Health_Background: '#FFB6C1', // LightPink
+  Education_Background: '#D3D3D3', // LightGray
+  Travel_Background: '#FFFFE0', // LightYellow
+
+  // Default
+  Default_Icon: '#A9A9A9', // DarkGray
+  Default_Background: '#F0F0F0', // LightGray
 };
