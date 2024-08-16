@@ -18,7 +18,7 @@ export const initializeDatabase = async (): Promise<void> => {
       PRAGMA journal_mode = WAL;
       CREATE TABLE IF NOT EXISTS expenses (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        category TEXT NOT NULL,
+        category TEXT,
         itemName TEXT NOT NULL,
         date TEXT NOT NULL,
         expenseAmount REAL NOT NULL,
@@ -26,13 +26,21 @@ export const initializeDatabase = async (): Promise<void> => {
         image TEXT
       );
     `);
-    
+
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS balance (
         id INTEGER PRIMARY KEY NOT NULL,
         amount REAL NOT NULL
       );
     `);
+
+    const tableInfo = await db.getAllAsync('PRAGMA table_info(expenses)');
+    const categoryColumnExists = tableInfo.some((column: any) => column.name === 'category');
+
+    if (!categoryColumnExists) {
+      await db.runAsync('ALTER TABLE expenses ADD COLUMN category TEXT');
+      console.log('Category column added to expenses table');
+    }
 
     const result = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
     if (!result) {
@@ -66,7 +74,7 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
     const newBalance = currentBalance - expense.expenseAmount;
     await saveBalance(newBalance);
 
-    console.log('Expense saved successfully!', result.lastInsertRowId, result.changes);
+    console.log('Expense saved!', result.lastInsertRowId, result.changes);
   } catch (error) {
     console.error('Error saving expense:', error);
     throw error;
@@ -135,7 +143,7 @@ export const saveBalance = async (amount: number): Promise<void> => {
       await db.runAsync('INSERT INTO balance (id, amount) VALUES (1, ?)', nonNegativeAmount);
     }
 
-    console.log('Balance saved successfully!');
+    console.log('Balance saved!');
   } catch (error) {
     console.error('Error saving balance:', error);
     throw error;
@@ -168,10 +176,12 @@ export const updateExpense = async (expense: type.Expense): Promise<void> => {
       const newBalance = currentBalance + (currentExpense.expenseAmount - expense.expenseAmount);
       await saveBalance(newBalance);
 
-      console.log('Expense updated successfully!');
+      console.log('Expense updated!');
     }
   } catch (error) {
     console.error('Error updating expense:', error);
     throw error;
   }
 };
+
+
