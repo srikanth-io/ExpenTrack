@@ -1,4 +1,3 @@
-// HomePage.tsx
 import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Colors } from '../utils/colors';
@@ -7,8 +6,6 @@ import Profile from '../components/profile&Notification';
 import Balance from '../components/Balance';
 import ExpensesList from '../components/ExpenseList';
 import { fonts } from '../utils/fonts';
-
-
 
 const HomePage: React.FC = () => {
   return (
@@ -31,12 +28,10 @@ const HomePage: React.FC = () => {
 
 
 const styles = StyleSheet.create({
-
-
-
   container: {
     flex: 1,
     padding: 20,
+    height : '100%',
     backgroundColor : Colors.Background_Color,
   },
   headerContainer: {
@@ -57,8 +52,7 @@ const styles = StyleSheet.create({
   ListContainer :{
     display : 'flex',
     padding :20,
-    marginTop : -80,
-    borderRadius : 20,
+    marginTop : -110,
     marginLeft : -20,
     marginRight : -20,
   }

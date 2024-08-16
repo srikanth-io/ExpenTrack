@@ -52,9 +52,9 @@ const ExpensesList = () => {
 
 const styles = StyleSheet.create({
   itemContainer: {
-    backgroundColor: Colors.Light_Teal, 
-    padding: 20,
-    marginVertical: 8,
+    backgroundColor: Colors.Pale_Teal, 
+    padding: 25,
+    marginVertical:5,
     borderRadius: 20, 
     flexDirection: 'row', 
   },

@@ -1,7 +1,7 @@
 import React from 'react';
 import { BottomTabNavigationProp, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { TouchableOpacity } from 'react-native';
-import { Octicons, Entypo, Feather } from '@expo/vector-icons';
+import { TouchableOpacity, View, Text, StyleSheet, TextInput } from 'react-native';
+import { MaterialCommunityIcons, Entypo, Feather, FontAwesome } from '@expo/vector-icons';
 import AllExpensesPage from './AllExpensesPage';
 import AddExpenses from './AddExpenses';
 import HomePage from './HomePage';
@@ -9,22 +9,29 @@ import { fonts } from '../utils/fonts';
 import { Colors } from './../utils/colors';
 
 type TabBarIconProps = {
-  name: any;
-  iconSet: 'Octicons' | 'Entypo' | 'Feather';
+  name: string | any;
+  iconSet: 'MaterialCommunityIcons' | 'Entypo' | 'Feather' | 'FontAwesome';
   size: number;
   color: string;
 };
-type TabParamList = any;
+
+type TabParamList = {
+  Home: undefined;
+  Transaction: undefined;
+  AddExpenses: undefined;
+  Budget: undefined;
+  Profile: undefined;
+};
 export type TabNavigationProp = BottomTabNavigationProp<TabParamList>;
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<TabParamList>();
 
 const TabBarIcon: React.FC<TabBarIconProps> = ({ name, iconSet, size, color }) => {
   let IconComponent;
 
   switch (iconSet) {
-    case 'Octicons':
-      IconComponent = Octicons;
+    case 'MaterialCommunityIcons':
+      IconComponent = MaterialCommunityIcons;
       break;
     case 'Entypo':
       IconComponent = Entypo;
@@ -32,8 +39,11 @@ const TabBarIcon: React.FC<TabBarIconProps> = ({ name, iconSet, size, color }) =
     case 'Feather':
       IconComponent = Feather;
       break;
+    case 'FontAwesome':
+      IconComponent = FontAwesome;
+      break;
     default:
-      IconComponent = Octicons;
+      IconComponent = MaterialCommunityIcons;
       break;
   }
 
@@ -48,54 +58,65 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+        tabBarIcon: ({ focused, color }) => {
           let iconName: string;
-          let iconSet: 'Octicons' | 'Entypo' | 'Feather';
+          let iconSet: 'MaterialCommunityIcons' | 'Entypo' | 'Feather' | 'FontAwesome';
 
           if (route.name === 'Home') {
-            iconSet = 'Octicons';
-            iconName = focused ? 'home' : 'home';
-          } else if (route.name === 'AllExpenses') {
             iconSet = 'Entypo';
-            iconName = focused ? 'list' : 'list';
+            iconName = focused ? 'home' : 'home';
+          } else if (route.name === 'Transaction') {
+            iconSet = 'Entypo';
+            iconName = focused ? 'swap' : 'swap';
+          } else if (route.name === 'Budget') {
+            iconSet = 'MaterialCommunityIcons';
+            iconName = focused ? 'chart-pie' : 'chart-pie';
+          } else if (route.name === 'Profile') {
+            iconSet = 'FontAwesome';
+            iconName = focused ? 'user' : 'user';
           } else {
-            iconSet = 'Octicons';
-            iconName = 'question';
+            iconSet = 'Feather';
+            iconName = 'plus';
           }
 
           return <TabBarIcon name={iconName} iconSet={iconSet} size={24} color={color} />;
         },
+        tabBarLabel: ({ focused }) => {
+          let label;
+          if (route.name === 'Home') {
+            label = 'Home';
+          } else if (route.name === 'Transaction') {
+            label = 'Transaction';
+          } else if (route.name === 'Budget') {
+            label = 'Budget';
+          } else if (route.name === 'Profile') {
+            label = 'Profile';
+          } else {
+            label = 'Add';
+          }
+          return <Text style={{ color: focused ? Colors.Dark_Teal : Colors.Light_Teal }}>{label}</Text>;
+        },
         tabBarLabelStyle: {
-          fontSize: 15,
+          fontSize: 12,
           fontFamily: fonts.PoppinsRegular,
         },
-        tabBarStyle: {
-          height: 70,
-          paddingBottom: 10,
-          backgroundColor: Colors.Background_Color,
-          borderRadius: 20,
-
-        },
-        tabBarActiveTintColor: Colors.Bottom_color,
-        tabBarInactiveTintColor: Colors.Second_color,
+        tabBarStyle: styles.tabBarStyle,
+        tabBarActiveTintColor: Colors.Dark_Teal,
+        tabBarInactiveTintColor: Colors.Light_Teal,
       })}
     >
       <Tab.Screen
         name="Home"
         component={HomePage}
         options={{
-          headerTitleAlign: 'center',
-          headerTitle: 'Home',
-          headerShown : false,
+          headerShown: false,
         }}
       />
       <Tab.Screen
-        name="AllExpenses"
+        name="Transaction"
         component={AllExpensesPage}
         options={{
-          headerTitleAlign: 'center',
-          headerTitle: 'All Expenses',
-          headerShown : false,
+          headerShown: false,
         }}
       />
       <Tab.Screen
@@ -103,42 +124,66 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
         component={AddExpenses}
         options={{
           tabBarIcon: ({ color }) => (
-            <Feather name="plus" size={30} color={Colors.Bottom_color} />
+            <Feather name="plus" size={30} color={Colors.Dark_Green} />
           ),
-          tabBarLabel: '               Add               ',
+          tabBarLabel: '',
           tabBarButton: (props) => (
-            <TabBarButton {...props} navigation={navigation} />
+            <CustomTabBarButton {...props} navigation={navigation} />
           ),
-          tabBarStyle: {
-            display: 'none',
-          },
+        }}
+      />
+      <Tab.Screen
+        name="Budget"
+        component={AllExpensesPage}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Tab.Screen
+        name="Profile"
+        component={HomePage}
+        options={{
+          headerShown: false,
         }}
       />
     </Tab.Navigator>
   );
 };
 
-type TabBarButtonProps = {
+type CustomTabBarButtonProps = {
   navigation: TabNavigationProp;
 } & React.ComponentProps<typeof TouchableOpacity>;
 
-const TabBarButton: React.FC<TabBarButtonProps> = ({ navigation, ...props }) => {
+const CustomTabBarButton: React.FC<CustomTabBarButtonProps> = ({ navigation, ...props }) => {
   return (
     <TouchableOpacity
       {...props}
-      style={{
-        height: 80,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderRadius: 20,
-        backgroundColor: Colors.Bottom_color,
-        padding: 5,
-      }}
+      style={styles.customButtonStyle}
       onPress={() => navigation.navigate('AddExpenses')}
     >
-      {props.children}
+      <Feather name="plus" size={30} color="white" />
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  tabBarStyle: {
+    height: 70,
+    paddingBottom: 10,
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 20,
+    elevation: 10,
+  },
+  customButtonStyle: {
+    top: -30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: Colors.Dark_Green,
+    elevation: 5,
+  },
+});
 
 export default TabNavigator;

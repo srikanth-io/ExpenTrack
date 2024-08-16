@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   ListContainer :{
     display : 'flex',
     padding :20,
-    marginTop : -80,
+    marginTop : -100,
     borderRadius : 20,
     marginLeft : -20,
     marginRight : -20,
