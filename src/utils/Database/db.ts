@@ -3,6 +3,9 @@ import { type } from '../types';
 
 type Balance = any;
 
+let isDataChanged = false;
+
+
 type Database = ReturnType<typeof SQLite.openDatabaseAsync>;
 
 const openDatabase = async (): Promise<Database> => {
@@ -58,7 +61,6 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
   try {
     const db = await dbPromise;
 
-    // Insert the expense with category
     const result = await db.runAsync(
       'INSERT INTO expenses (category, itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?, ?)',
       expense.category ?? null,         
@@ -69,7 +71,9 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
       expense.image ?? null
     );
 
-    // Update the balance
+    // Set change tracker to true
+    isDataChanged = true;
+
     const currentBalance = await getBalance();
     const newBalance = currentBalance - expense.expenseAmount;
     await saveBalance(newBalance);
@@ -80,6 +84,7 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
     throw error;
   }
 };
+
 
 // Function to get recent expenses
 export const getRecentExpenses = async (): Promise<type.Expense[]> => {
