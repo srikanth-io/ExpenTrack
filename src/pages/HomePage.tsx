@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
   },
   ListContainer :{
     display : 'flex',
-    padding :20,
+    padding : 15,
     marginTop : -110,
     marginLeft : -20,
     marginRight : -20,

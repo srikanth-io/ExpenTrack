@@ -53,8 +53,8 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
     // Insert the expense with category
     const result = await db.runAsync(
       'INSERT INTO expenses (category, itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?, ?)',
-      expense.category,         
-      expense.itemName,
+      expense.category ?? null,         
+      expense.itemName ?? null,
       expense.date ?? null,
       expense.expenseAmount,
       expense.description ?? null,

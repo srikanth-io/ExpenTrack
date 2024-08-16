@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { getAllExpenses } from '../utils/Database/db'; 
 import { type } from '../utils/types';
 import CategoryIcon from '../components/categoriesIcon'; 
@@ -27,15 +27,14 @@ const ExpensesList = () => {
     <View style={styles.itemContainer}>
       <View style={styles.amountContainer}>
         <CategoryIcon 
-          category={item.category}          
-        />
+          category={item.category} amount={0} isExpense={false}        />
       </View>
 
-      <View style={styles.textContainer}>
+      <TouchableOpacity style={styles.textContainer}>
         <Text style={styles.itemTextHead}>{item.itemName}</Text>
         <Text style={styles.itemText}>{item.date}</Text>
         <Text style={styles.itemText}>${item.expenseAmount.toFixed(2)}</Text>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 
