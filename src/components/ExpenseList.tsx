@@ -12,6 +12,8 @@ const ExpensesList = () => {
     const fetchData = async () => {
       try {
         const allExpenses = await getAllExpenses();
+        console.log('Fetched Expenses:', allExpenses);
+
         setExpenses(allExpenses);
       } catch (error) {
         console.error('Error fetching expenses:', error);
@@ -20,23 +22,20 @@ const ExpensesList = () => {
 
     fetchData();
   }, []);
-  
 
   const renderItem = ({ item }: { item: type.Expense }) => (
     <View style={styles.itemContainer}>
-        <View style={styles.amountContainer}>
+      <View style={styles.amountContainer}>
         <CategoryIcon 
-          category={item.category}
-          amount={item.expenseAmount}
-          isExpense={item.expenseAmount < 0} 
+          category={item.category}          
         />
       </View>
 
       <View style={styles.textContainer}>
         <Text style={styles.itemTextHead}>{item.itemName}</Text>
         <Text style={styles.itemText}>{item.date}</Text>
+        <Text style={styles.itemText}>${item.expenseAmount.toFixed(2)}</Text>
       </View>
-      
     </View>
   );
 
@@ -54,31 +53,24 @@ const styles = StyleSheet.create({
   itemContainer: {
     backgroundColor: Colors.Pale_Teal, 
     padding: 25,
-    marginVertical:5,
+    marginVertical: 5,
     borderRadius: 20, 
     flexDirection: 'row', 
   },
   textContainer: {
-    paddingLeft : 10,
-    justifyContent : 'center',
-    },
-    itemTextHead: {
+    paddingLeft: 10,
+    justifyContent: 'center',
+  },
+  itemTextHead: {
     fontSize: 20,
-    alignItems : 'center',
     color: Colors.Text_Color, 
-    },
-    itemText: {
+  },
+  itemText: {
     fontSize: 16,
-    alignItems : 'center',
     color: Colors.Text_Color, 
   },
   amountContainer: {
     alignItems: 'center',
-  },
-  amountText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: Colors.Text_Color,
   },
   emptyText: {
     textAlign: 'center',

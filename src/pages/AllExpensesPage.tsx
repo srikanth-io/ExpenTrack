@@ -5,7 +5,6 @@ import { Colors } from '../utils/colors';
 import ExpensesList from '../components/ExpenseList';
 import { fonts } from '../utils/fonts';
 import Balance from '../components/Balance';
-import IncomeAndExpense from '../components/IncomeAndExpense';
 import Profile from '../components/profile&Notification';
 
 const AllExpensesPage: React.FC = () => {
@@ -14,10 +13,9 @@ const AllExpensesPage: React.FC = () => {
       <View style={styles.headerContainer}>
         <Balance />
       </View>
-      <View style={{top : -70, left : 10}}>
+      <View style={{top : -66, left : 10}}>
         <Profile />
       </View>
-      {/* <RecentExpenses /> */}
       <View style ={styles.ListContainer}>
         <Text style = {styles.ListContainerText}>All Expenses</Text>
       <ExpensesList/>

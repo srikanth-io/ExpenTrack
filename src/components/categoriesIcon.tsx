@@ -18,15 +18,40 @@ const CategoryIcon: React.FC<CategoryIconProps> = ({ category }) => {
         return 'cart-outline';
       case 'income':
         return 'wallet-outline';
+      case 'entertainment':
+        return 'tv-outline';
+      case 'health':
+        return 'medkit-outline';
+      case 'education':
+        return 'school-outline';
+      case 'travel':
+        return 'airplane-outline';
       default:
         return 'help-outline';
     }
   };
 
+  const getIconColor = () => {
+    switch (category) {
+      case 'income':
+        return Colors.Dark_Green;
+      case 'food':
+      case 'transport':
+      case 'shopping':
+      case 'entertainment':
+      case 'health':
+      case 'education':
+      case 'travel':
+        return Colors.Light_Red;
+      default:
+        return Colors.Text_Color;
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Ionicons name={getIconName()} size={24} color={Colors.Text_Color} />
-      <Text style={styles.categoryText}>{category}</Text>
+      <Ionicons name={getIconName()} size={24} color={getIconColor()} />
+      {/* <Text style={styles.categoryText}>{category.charAt(0).toUpperCase() + category.slice(1)}</Text> */}
     </View>
   );
 };

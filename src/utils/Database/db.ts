@@ -1,10 +1,9 @@
 import * as SQLite from 'expo-sqlite';
-import { type } from './../types';
+import { type } from '../types';
 
-type Balance =  any;
+type Balance = any;
 
 type Database = ReturnType<typeof SQLite.openDatabaseAsync>;
-
 
 const openDatabase = async (): Promise<Database> => {
   return await SQLite.openDatabaseAsync('expense.db');
@@ -40,26 +39,32 @@ export const initializeDatabase = async (): Promise<void> => {
       await db.runAsync('INSERT INTO balance (id, amount) VALUES (1, 0)');
     }
 
-
     console.log('Database initialized and tables created successfully.');
   } catch (error) {
     console.error('Error initializing database:', error);
   }
 };
 
-
 // Function to save an expense
 export const saveExpense = async (expense: type.Expense): Promise<void> => {
   try {
     const db = await dbPromise;
+
+    // Insert the expense with category
     const result = await db.runAsync(
-      'INSERT INTO expenses (itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO expenses (category, itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?, ?)',
+      expense.category,         
       expense.itemName,
       expense.date ?? null,
       expense.expenseAmount,
       expense.description ?? null,
       expense.image ?? null
     );
+
+    // Update the balance
+    const currentBalance = await getBalance();
+    const newBalance = currentBalance - expense.expenseAmount;
+    await saveBalance(newBalance);
 
     console.log('Expense saved successfully!', result.lastInsertRowId, result.changes);
   } catch (error) {
@@ -84,7 +89,7 @@ export const getRecentExpenses = async (): Promise<type.Expense[]> => {
 export const getAllExpenses = async (): Promise<type.Expense[]> => {
   try {
     const db = await dbPromise;
-    const allRows = await db.getAllAsync<type.Expense>('SELECT * FROM expenses');
+    const allRows = await db.getAllAsync<type.Expense>('SELECT * FROM expenses ORDER BY date DESC');
     return allRows;
   } catch (error) {
     console.error('Error retrieving expenses:', error);
@@ -138,24 +143,35 @@ export const saveBalance = async (amount: number): Promise<void> => {
 };
 
 // Function to update an expense
-export const updateExpense = async (expense: type.Expense ): Promise<void> => {
+export const updateExpense = async (expense: type.Expense): Promise<void> => {
   try {
     const db = await dbPromise;
-    await db.runAsync(
-      'UPDATE expenses SET itemName = ?, date = ?, expenseAmount = ?, description = ?, image = ? WHERE id = ?',
-      expense.itemName,
-      expense.date ?? null,
-      expense.expenseAmount,
-      expense.description ?? null,
-      expense.image ?? null,
-      expense.id ?? null,
-    );
 
-    console.log('Expense updated successfully!');
+    // Get the current expense to update balance
+    const currentExpense = await getExpenseById(expense.id);
+
+    if (currentExpense) {
+      // Update the expense
+      await db.runAsync(
+        'UPDATE expenses SET category = ?, itemName = ?, date = ?, expenseAmount = ?, description = ?, image = ? WHERE id = ?',
+        expense.category,           
+        expense.itemName,
+        expense.date ?? null,
+        expense.expenseAmount,
+        expense.description ?? null,
+        expense.image ?? null,
+        expense.id
+      );
+
+      // Update the balance
+      const currentBalance = await getBalance();
+      const newBalance = currentBalance + (currentExpense.expenseAmount - expense.expenseAmount);
+      await saveBalance(newBalance);
+
+      console.log('Expense updated successfully!');
+    }
   } catch (error) {
     console.error('Error updating expense:', error);
     throw error;
   }
 };
-
-

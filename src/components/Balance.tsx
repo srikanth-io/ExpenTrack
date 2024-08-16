@@ -13,7 +13,7 @@ const Balance: React.FC = () => {
       try {
         const dbBalance = await getBalance();
         setBalance(dbBalance);
-        setIsBalanceUpdated(false); // Reset the update flag after fetching
+        setIsBalanceUpdated(false); 
       } catch (error) {
         console.error('Error fetching balance:', error);
       }
