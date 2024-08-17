@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, Modal, TextInput, Alert, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView, Alert, Platform, KeyboardAvoidingView } from 'react-native';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { getBalance, saveBalance } from '../utils/Database/db';
+import Balance from './Balance';
 
 const BalanceManager: React.FC = () => {
   const [balance, setBalance] = useState<number>(0);
-  const [modalVisible, setModalVisible] = useState<boolean>(false);
-  const [newBalance, setNewBalance] = useState<string>('');
+  const [amount, setAmount] = useState<string>('');
+  const [name, setName] = useState<string>('');
+  const [category, setCategory] = useState<string>('');
+  const [bank, setBank] = useState<string>('');
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -23,25 +26,22 @@ const BalanceManager: React.FC = () => {
     fetchBalance();
   }, []);
 
-  const handleOpenModal = () => setModalVisible(true);
-
-  const handleCloseModal = () => {
-    setModalVisible(false);
-    setNewBalance('');
-  };
-
   const handleAddBalance = async () => {
-    const newBalanceValue = parseFloat(newBalance);
-    if (isNaN(newBalanceValue) || newBalanceValue <= 0) {
-      Alert.alert('Validation Error', 'Balance amount must be greater than 0.');
+    const newAmount = parseFloat(amount);
+    if (isNaN(newAmount) || newAmount <= 0 || !name || !category || !bank) {
+      Alert.alert('Validation Error', 'All fields must be filled and amount must be greater than 0.');
       return;
     }
 
     try {
-      const updatedBalance = balance + newBalanceValue;
-      await saveBalance(updatedBalance);
+      const updatedBalance = balance + newAmount;
+      await saveBalance(updatedBalance, { amount: newAmount, name, category, bank });
       setBalance(updatedBalance);
-      handleCloseModal();
+      Alert.alert("Balance Saved Successfully!");
+      setAmount('');
+      setName('');
+      setCategory('');
+      setBank('');
     } catch (error) {
       console.error('Error updating balance:', error);
       Alert.alert('Error', 'Failed to update balance.');
@@ -49,114 +49,113 @@ const BalanceManager: React.FC = () => {
   };
 
   return (
-    <View style={styles.balanceContainer}>
-      <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
-      <TouchableOpacity style={styles.addBalanceButton} onPress={handleOpenModal}>
-        <Text style={styles.addBalanceButtonText}>Add Balance</Text>
-      </TouchableOpacity>
-
-      <Modal
-        visible={modalVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={handleCloseModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Enter Balance</Text>
-            <TextInput
-              style={styles.modalInput}
-              value={newBalance}
-              onChangeText={text => setNewBalance(text.replace(/[^0-9.]/g, ''))}
-              keyboardType="number-pad"
-              placeholder="₹0.0"
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity style={styles.modalButton} onPress={handleCloseModal}>
-                <Text style={styles.modalButtonText}>❌ Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.modalButton} onPress={handleAddBalance}>
-                <Text style={styles.modalButtonText}>✔️ Ok</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.balanceContainer}>
+          <Balance/>
         </View>
-      </Modal>
-    </View>
+        <TextInput
+            style={styles.AmountInput}
+            value={amount}
+            onChangeText={text => setAmount(text.replace(/[^0-9.]/g, ''))}
+            keyboardType="numeric"
+            placeholder="₹ 0.00"
+          />
+        
+        <View style={styles.formContainer}>
+         
+          
+          <TextInput
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter name"
+          />
+          
+          <TextInput
+            style={styles.input}
+            value={category}
+            onChangeText={setCategory}
+            placeholder="Select Category"
+          />
+          
+          <TextInput
+            style={styles.input}
+            value={bank}
+            onChangeText={setBank}
+            placeholder="Enter bank name"
+          />
+          
+        </View>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddBalance}>
+           <Text style={styles.addButtonText}>Add Balance</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: Colors.Background_Color,
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    padding: 30,
+  },
   balanceContainer: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    backgroundColor: Colors.Dark_Teal,
-    padding: 15,
-    borderRadius: 15,
+    marginBottom: 200,
+    alignItems: 'center',
   },
   balanceText: {
-    color: Colors.Background_Color,
-    fontFamily: fonts.PoppinsRegular,
-    fontWeight: 'bold',
-    fontSize: 18,
-  },
-  addBalanceButton: {
-    backgroundColor: Colors.Background_Color,
-    padding: 10,
-    alignItems: 'center',
-    borderRadius: 15,
-    marginTop: 10,
-  },
-  addBalanceButtonText: {
+    fontFamily: fonts.PoppinsSemiBold,
+    fontSize: 24,
     color: Colors.Dark_Teal,
-    fontFamily: fonts.PoppinsRegular,
-    fontWeight: 'bold',
-    fontSize: 14,
   },
-  modalContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  },
-  modalContent: {
+  formContainer: {
     backgroundColor: Colors.Background_Color,
     padding: 20,
     borderRadius: 15,
-    width: '80%',
-    alignItems: 'center',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 10,
   },
-  modalTitle: {
-    fontFamily: fonts.PoppinsRegular,
-    fontSize: 18,
+  AmountInput : {
+    fontFamily : fonts.PoppinsSemiBold,
+    paddingHorizontal: 10,
+    fontSize: 50,
+    color: Colors.Dark_Teal,
+    marginBottom : 30,
+  },
+  input: {
+    height: 60,
+    backgroundColor: Colors.Pale_Teal,
+    fontFamily : fonts.PoppinsSemiBold,
+    borderRadius: 20,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    color: Colors.Dark_Teal,
     marginBottom: 20,
   },
-  modalInput: {
-    width: '100%',
-    borderColor: Colors.Dark_Green,
-    borderWidth: 2,
-    borderRadius: 15,
-    padding: 10,
-    marginBottom: 20,
-    fontSize: 18,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-  },
-  modalButton: {
-    padding: 10,
-    borderRadius: 15,
-    backgroundColor: Colors.Dark_Green,
-    width: '45%',
+  addButton: {
+    backgroundColor: Colors.Teal,
+    padding: 20,
+    marginTop : 20,
+    top : 20,
+    borderRadius: 20,
     alignItems: 'center',
   },
-  modalButtonText: {
+  addButtonText: {
+    fontFamily: fonts.PoppinsSemiBold,
     fontSize: 18,
     color: Colors.Background_Color,
-    fontFamily: fonts.PoppinsRegular,
   },
 });
 

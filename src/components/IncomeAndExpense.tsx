@@ -1,84 +1,115 @@
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native'
-import React from 'react'
-import { Colors } from '../utils/colors'
-import { fonts } from '../utils/fonts'
-
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Colors } from '../utils/colors';
+import { fonts } from '../utils/fonts';
 
 const IncomeAndExpense = () => {
-  return (
-    <View style = {styles.amountsContainer}>
-      <View style = {styles.IncExpContainer}>
-        <TouchableOpacity style = {styles.IncContainer}>
-        <Image style ={{ tintColor: Colors.Teal, height: 50, width: 50 }} source={require('../../assets/CustomIcons/income.png') }/>
-        <View>
-        <Text style={styles.IncomeAmountsText}>Income</Text>
-        <Text style={styles.IncomeAmounts}>₹ 1000</Text>
-        </View>
-        
-        </TouchableOpacity>
-        <TouchableOpacity style = {styles.ExpContainer}>
-        <Image style ={{ tintColor: Colors.Red, height: 50, width: 50 }} source={require('../../assets/CustomIcons/expense.png')} />
-        <View>
-        <Text style ={styles.ExpenseAmountText}>Expense</Text>
-        <Text style ={styles.ExpenseAmount}>₹ 3000</Text>    
-        </View>
-        </TouchableOpacity>
-        </View>
-    </View>
-  )
-}
+  const [income, setIncome] = useState(0);
+  const [expense, setExpense] = useState(0);
 
-export default IncomeAndExpense
+  useEffect(() => {
+    // Fetch data from your database here
+    // For example, if you're using an async function to get the data:
+    const fetchData = async () => {
+      try {
+        // Replace with your actual fetch logic
+        const incomeData = await getIncomeFromDB();
+        const expenseData = await getExpenseFromDB();
+
+        setIncome(incomeData);
+        setExpense(expenseData);
+      } catch (error) {
+        console.error("Error fetching data: ", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  return (
+    <View style={styles.amountsContainer}>
+      <View style={styles.IncExpContainer}>
+        <TouchableOpacity style={styles.IncContainer}>
+          <Image style={{ tintColor: Colors.Teal, height: 50, width: 50 }} source={require('../../assets/CustomIcons/income.png')} />
+          <View>
+            <Text style={styles.IncomeAmountsText}>Income</Text>
+            <Text style={styles.IncomeAmounts}>₹ {income}</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.ExpContainer}>
+          <Image style={{ tintColor: Colors.Red, height: 50, width: 50 }} source={require('../../assets/CustomIcons/expense.png')} />
+          <View>
+            <Text style={styles.ExpenseAmountText}>Expense</Text>
+            <Text style={styles.ExpenseAmount}>₹ {expense}</Text>
+          </View>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+export default IncomeAndExpense;
 
 const styles = StyleSheet.create({
-      amountsContainer : {
-        flexDirection : 'row',
-        alignItems : 'center',
-        justifyContent: 'space-around', 
-      },
-      IncExpContainer: {
-        flexDirection : 'row',
-        justifyContent : 'center',
-        alignItems : 'center',
-        padding : 20,
-        top : -30,
-        gap : 30,
-        borderRadius : 20,
-      },
-      IncContainer : {
-        flexDirection : 'row',
-        backgroundColor : Colors.Pale_Teal,
-        justifyContent : 'center',
-        padding : 15,
-        gap : 5,
-        borderRadius : 20,
-      },
-      ExpContainer : {
-        flexDirection : 'row',
-        backgroundColor : Colors.Light_Red,
-        justifyContent : 'center',
-        padding : 15,
-        gap : 5,
-        borderRadius : 20,
-      },
-      IncomeAmountsText :{ 
-        fontSize : 18,
-        color : Colors.Teal,
-        fontFamily : fonts.PoppinsSemiBold,
-      },
-      IncomeAmounts : {
-        fontSize : 25,
-        color : Colors.Teal,
-        fontFamily : fonts.PoppinsBold,
-      },
-      ExpenseAmountText :{ 
-        fontSize : 18,
-        color : Colors.Red,
-        fontFamily : fonts.PoppinsSemiBold,
-      },
-      ExpenseAmount : {
-        fontSize : 25,
-        color : Colors.Red,
-        fontFamily : fonts.PoppinsBold,
-      },
-})
+  amountsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+  IncExpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    top: -30,
+    gap: 30,
+    borderRadius: 20,
+  },
+  IncContainer: {
+    flexDirection: 'row',
+    backgroundColor: Colors.Pale_Teal,
+    justifyContent: 'center',
+    padding: 15,
+    gap: 5,
+    borderRadius: 20,
+  },
+  ExpContainer: {
+    flexDirection: 'row',
+    backgroundColor: Colors.Light_Red,
+    justifyContent: 'center',
+    padding: 15,
+    gap: 5,
+    borderRadius: 20,
+  },
+  IncomeAmountsText: {
+    fontSize: 18,
+    color: Colors.Teal,
+    fontFamily: fonts.PoppinsSemiBold,
+  },
+  IncomeAmounts: {
+    fontSize: 25,
+    color: Colors.Teal,
+    fontFamily: fonts.PoppinsBold,
+  },
+  ExpenseAmountText: {
+    fontSize: 18,
+    color: Colors.Red,
+    fontFamily: fonts.PoppinsSemiBold,
+  },
+  ExpenseAmount: {
+    fontSize: 25,
+    color: Colors.Red,
+    fontFamily: fonts.PoppinsBold,
+  },
+});
+
+// Example functions to fetch data from DB
+async function getIncomeFromDB() {
+  // Replace with actual database fetching logic
+  return 1000; // Dummy value
+}
+
+async function getExpenseFromDB() {
+  // Replace with actual database fetching logic
+  return 3000; // Dummy value
+}

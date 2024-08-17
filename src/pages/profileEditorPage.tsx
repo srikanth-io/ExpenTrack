@@ -1,41 +1,54 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  Alert,
-  Platform,
-  KeyboardAvoidingView,
-  ScrollView,
-  Modal,
-  FlatList,
-  TouchableWithoutFeedback,
-  Keyboard,
-} from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Platform, ScrollView, KeyboardAvoidingView, TextInput } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { Feather } from '@expo/vector-icons';
-import { initializeDatabase, saveExpense } from '../utils/Database/db';
-import Balance from '../components/Balance';
+import { useNavigation } from '@react-navigation/native';
 
 const ProfileEditorPage: React.FC = () => {
-  const [username] = useState('JohnDoe'); // Fixed value
+  const [profilePhoto, setProfilePhoto] = useState<string>('https://via.placeholder.com/150');
+  const [username] = useState('JohnDoe'); 
   const [name, setName] = useState('John Doe');
   const [email, setEmail] = useState('johndoe@example.com');
   const [password, setPassword] = useState('********');
   const [isEditing, setIsEditing] = useState(false);
 
+  const navigation = useNavigation();
+
   const handleSave = () => {
-    // Save functionality goes here
     Alert.alert('Profile Saved', 'Your profile has been updated successfully.');
     setIsEditing(false);
   };
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
+  };
+
+  const pickImage = async () => {
+    // Request permission to access media library
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permissionResult.granted) {
+      Alert.alert('Permission Denied', 'You need to allow permission to access the media library.');
+      return;
+    }
+
+    // Open image picker
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      setProfilePhoto(result.assets[0].uri);
+    }
+  };
+
+  const navigateToBalanceManager = () => {
+    navigation.navigate('BalanceManager');
   };
 
   return (
@@ -46,14 +59,8 @@ const ProfileEditorPage: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
           <View style={styles.profilePhotoContainer}>
-            <Image
-              source={{ uri: 'https://via.placeholder.com/150' }} 
-              style={styles.profilePhoto}
-            />
-            <TouchableOpacity
-              style={styles.editIcon}
-              onPress={() => Alert.alert('Edit Profile Photo', 'Edit photo functionality not implemented yet.')}
-            >
+            <Image source={{ uri: profilePhoto }} style={styles.profilePhoto} />
+            <TouchableOpacity style={styles.editIcon} onPress={pickImage}>
               <Feather name="edit" size={24} color={Colors.Background_Color} />
             </TouchableOpacity>
           </View>
@@ -110,8 +117,7 @@ const ProfileEditorPage: React.FC = () => {
             )}
           </View>
 
-
-          <TouchableOpacity style={styles.button}> 
+          <TouchableOpacity style={styles.button} onPress={navigateToBalanceManager}>
             <Text style={styles.buttonText}>Add Balance</Text>
           </TouchableOpacity>
         </View>
@@ -144,48 +150,50 @@ const styles = StyleSheet.create({
     borderRadius: 75,
   },
   editIcon: {
-      position: 'absolute',
-      bottom: 0,
-      right: 0,
-      backgroundColor: Colors.Dark_Teal,
-      borderRadius: 50,
-      padding: 10,
-    },
-    fieldContainer: {
-        marginBottom: 15,
-    },
-    label: {
-        fontSize: 16,
-        fontFamily: fonts.PoppinsRegular,
-        color: Colors.Dark_Teal,
-        marginBottom: 5,
-    },
-    input: {
-        height: 55,
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: Colors.Dark_Teal,
+    borderRadius: 50,
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  fieldContainer: {
+    marginBottom: 15,
+  },
+  label: {
+    fontSize: 16,
+    fontFamily: fonts.PoppinsRegular,
+    color: Colors.Dark_Teal,
+    marginBottom: 5,
+  },
+  input: {
+    height: 55,
     backgroundColor: Colors.Pale_Teal,
     borderRadius: 15,
     paddingHorizontal: 10,
     fontSize: 16,
     fontFamily: fonts.PoppinsSemiBold,
     color: Colors.Dark_Teal,
-},
-fixedText: {
+  },
+  fixedText: {
     height: 55,
     backgroundColor: Colors.Pale_Teal,
     borderRadius: 15,
     paddingHorizontal: 10,
-    paddingVertical : 15,
-    justifyContent : 'center',
+    paddingVertical: 15,
+    justifyContent: 'center',
     fontSize: 16,
     fontFamily: fonts.PoppinsSemiBold,
     color: Colors.Dark_Teal,
   },
   buttonContainer: {
     marginTop: 20,
-},
-button: {
+  },
+  button: {
     backgroundColor: Colors.Teal,
-    marginBottom : 20,
+    marginBottom: 20,
     padding: 15,
     borderRadius: 20,
     alignItems: 'center',

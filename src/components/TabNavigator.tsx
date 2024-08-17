@@ -2,11 +2,12 @@ import React from 'react';
 import { BottomTabNavigationProp, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TouchableOpacity, View, Text, StyleSheet, TextInput } from 'react-native';
 import { MaterialCommunityIcons, Entypo, Feather, FontAwesome } from '@expo/vector-icons';
-import AllExpensesPage from './AllExpensesPage';
-import AddExpenses from './AddExpenses';
-import HomePage from './HomePage';
+import AllExpensesPage from '../pages/AllExpensesPage';
+import AddExpenses from '../pages/AddExpenses';
+import HomePage from '../pages/HomePage';
 import { fonts } from '../utils/fonts';
-import { Colors } from './../utils/colors';
+import { Colors } from '../utils/colors';
+import ProfileEditorPage from '../pages/profileEditorPage';
 
 type TabBarIconProps = {
   name: string | any;
@@ -141,9 +142,12 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
       />
       <Tab.Screen
         name="Profile"
-        component={HomePage}
+        component={ProfileEditorPage}
+        
         options={{
-          headerShown: false,
+          headerShown: true,
+          headerTitleAlign : 'center',
+          tabBarStyle: { display: 'none' }
         }}
       />
     </Tab.Navigator>

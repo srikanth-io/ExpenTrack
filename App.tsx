@@ -2,11 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator, TransitionPresets } from '@react-navigation/stack';
 import SplashScreen from './src/pages/SplashScreen';
-import TabNavigator from './src/pages/TabNavigator';
+import TabNavigator from './src/components/TabNavigator';
 import AddExpenses from './src/pages/AddExpenses';
 import { Colors } from './src/utils/colors';
 import { fonts } from './src/utils/fonts';
-import EditExpense from './src/pages/EditExpense';
+import ProfileEditorPage from './src/pages/profileEditorPage';
+import BalanceManager from './src/components/BalanceManager';
 
 
 const Stack = createStackNavigator();
@@ -57,7 +58,8 @@ export default function App() {
                 }}>
         <Stack.Screen name="Dashboard" component={TabNavigator} options={{ headerShown: false, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'} }} />
         <Stack.Screen name="AddExpenses" component={AddExpenses} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Add Expenses' }} />
-        <Stack.Screen name="EditExpense" component={EditExpense} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Edit Expenses' }} />
+        <Stack.Screen name="ProfileEditor" component={ProfileEditorPage} options={{ title: 'Profile Editor' }} />
+        <Stack.Screen name="BalanceManager" component={BalanceManager} options={{ title: 'Add Balance' }} />
       </Stack.Navigator>
     </NavigationContainer>
 

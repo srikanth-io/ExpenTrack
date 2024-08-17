@@ -136,7 +136,7 @@ export const getBalance = async (): Promise<number> => {
 };
 
 // Function to save the balance with non-negative check
-export const saveBalance = async (amount: number): Promise<void> => {
+export const saveBalance = async (amount: number, p0: { amount: number; name: string; category: string; bank: string; }): Promise<void> => {
   try {
     const db = await dbPromise;
     const nonNegativeAmount = Math.max(0, amount); 
