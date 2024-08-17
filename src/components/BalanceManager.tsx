@@ -48,6 +48,10 @@ const BalanceManager: React.FC = () => {
     }
   };
 
+  const handleChangeAmountInput = (text: string) => {
+    setAmount(text.replace(/[^0-9.]/g, ''));
+  };
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -57,14 +61,18 @@ const BalanceManager: React.FC = () => {
         <View style={styles.balanceContainer}>
           <Balance/>
         </View>
+        <View style= {styles.MainContainer}>
+       <>
+       <Text style = {styles.AmountText} >Add Balance</Text>
         <TextInput
             style={styles.AmountInput}
             value={amount}
-            onChangeText={text => setAmount(text.replace(/[^0-9.]/g, ''))}
+            onChangeText={handleChangeAmountInput}
             keyboardType="numeric"
             placeholder="₹ 0.00"
+            placeholderTextColor={Colors.Text_Color}
           />
-        
+       
         <View style={styles.formContainer}>
          
           
@@ -93,6 +101,9 @@ const BalanceManager: React.FC = () => {
         <TouchableOpacity style={styles.addButton} onPress={handleAddBalance}>
            <Text style={styles.addButtonText}>Add Balance</Text>
         </TouchableOpacity>
+
+         </>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -104,21 +115,36 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Background_Color,
   },
   scrollContainer: {
-    flexGrow: 1,
     paddingHorizontal: 20,
-    padding: 30,
+    padding: 0,
+  },
+  MainContainer : {
+    backgroundColor : Colors.Light_Teal,
+    paddingTop: 40,
+    paddingBottom: 65,
+    padding : 20,
+    marginLeft: -20, 
+    marginRight: -20,
+    borderRadius : 20,
+    borderTopWidth : 0.1,
+  },
+  AmountText : {
+    paddingHorizontal : 10,
+    fontSize : 16,
+    color : Colors.Text_Color,
+    fontFamily : fonts.PoppinsSemiBold,
   },
   balanceContainer: {
-    marginBottom: 200,
+    marginBottom: 160,
     alignItems: 'center',
   },
   balanceText: {
     fontFamily: fonts.PoppinsSemiBold,
     fontSize: 24,
-    color: Colors.Dark_Teal,
+    color: Colors.Pale_Teal,
   },
   formContainer: {
-    backgroundColor: Colors.Background_Color,
+    backgroundColor: Colors.Pale_Teal,
     padding: 20,
     borderRadius: 15,
     elevation: 5,
@@ -131,18 +157,20 @@ const styles = StyleSheet.create({
     fontFamily : fonts.PoppinsSemiBold,
     paddingHorizontal: 10,
     fontSize: 50,
-    color: Colors.Dark_Teal,
+    color: Colors.Background_Color,
     marginBottom : 30,
   },
   input: {
     height: 60,
-    backgroundColor: Colors.Pale_Teal,
+    backgroundColor: Colors.Background_Color,
     fontFamily : fonts.PoppinsSemiBold,
     borderRadius: 20,
     paddingHorizontal: 10,
     fontSize: 16,
     color: Colors.Dark_Teal,
     marginBottom: 20,
+    top : 10,
+    justifyContent : 'center',
   },
   addButton: {
     backgroundColor: Colors.Teal,
