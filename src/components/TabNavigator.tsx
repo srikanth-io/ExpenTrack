@@ -1,6 +1,6 @@
 import React from 'react';
 import { BottomTabNavigationProp, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { TouchableOpacity, View, Text, StyleSheet, TextInput } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons, Entypo, Feather, FontAwesome } from '@expo/vector-icons';
 import AllExpensesPage from '../pages/AllExpensesPage';
 import AddExpenses from '../pages/AddExpenses';
@@ -63,7 +63,7 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
           let iconName: string;
           let iconSet: 'MaterialCommunityIcons' | 'Entypo' | 'Feather' | 'FontAwesome';
 
-          if (route.name === 'Home') {
+          if (route.name === 'Home') { 
             iconSet = 'Entypo';
             iconName = focused ? 'home' : 'home';
           } else if (route.name === 'Transaction') {

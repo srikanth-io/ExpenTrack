@@ -159,7 +159,7 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
             value={expenseAmount}
             onChangeText={text => setExpenseAmount(text.replace(/[^0-9.]/g, ''))} 
             keyboardType='number-pad'
-            placeholder='₹0'
+            placeholder='₹ 0.0'
           />
           <View style={styles.space} />
 

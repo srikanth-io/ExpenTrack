@@ -76,10 +76,9 @@ const styles = StyleSheet.create({
     color: Colors.Dark_Teal,
   },
   ListContainer: {
-    display: 'flex',
-    padding: 20,
+    flex: 1,
+    padding: 15,
     marginTop: -100,
-    borderRadius: 20,
     marginLeft: -20,
     marginRight: -20,
   },

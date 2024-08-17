@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Alert, Platform, ScrollView, KeyboardAvoidingView, TextInput } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Platform, ScrollView, KeyboardAvoidingView, TextInput } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { Feather } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
+import Toast from 'react-native-toast-message';
 
 const ProfileEditorPage: React.FC = () => {
   const [profilePhoto, setProfilePhoto] = useState<string>('https://via.placeholder.com/150');
@@ -17,24 +18,35 @@ const ProfileEditorPage: React.FC = () => {
   const navigation = useNavigation();
 
   const handleSave = () => {
-    Alert.alert('Profile Saved', 'Your profile has been updated successfully.');
+    Toast.show({
+      type: 'successToast',
+      text1: 'Profile Updated',
+      text2: 'Your profile has been updated successfully.',
+    });
     setIsEditing(false);
   };
 
   const handleEditToggle = () => {
+    Toast.show({
+      type: 'infoToast',
+      text1: 'Edit Mode',
+      text2: 'You have enabled edit mode.',
+    });
     setIsEditing(!isEditing);
   };
 
   const pickImage = async () => {
-    // Request permission to access media library
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissionResult.granted) {
-      Alert.alert('Permission Denied', 'You need to allow permission to access the media library.');
+      Toast.show({
+        type: 'errorToast',
+        text1: 'Permission Denied',
+        text2: 'You need to allow permission to access the media library.',
+      });
       return;
     }
 
-    // Open image picker
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
@@ -48,7 +60,7 @@ const ProfileEditorPage: React.FC = () => {
   };
 
   const navigateToBalanceManager = () => {
-    navigation.navigate('BalanceManager');
+    navigation.navigate('BalanceManager');  
   };
 
   return (
@@ -106,15 +118,12 @@ const ProfileEditorPage: React.FC = () => {
           </View>
 
           <View style={styles.buttonContainer}>
-            {isEditing ? (
-              <TouchableOpacity style={styles.button} onPress={handleSave}>
+              <TouchableOpacity style={styles.buttonSave} onPress={handleSave}>
                 <Text style={styles.buttonText}>Save</Text>
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity style={styles.button} onPress={handleEditToggle}>
-                <Text style={styles.buttonText}>Edit</Text>
+              <TouchableOpacity style={styles.buttonEdit} onPress={handleEditToggle}>
+                <Text style={styles.buttonText}><Feather name="edit" size={30} color={Colors.Background_Color} /></Text>
               </TouchableOpacity>
-            )}
           </View>
 
           <TouchableOpacity style={styles.button} onPress={navigateToBalanceManager}>
@@ -122,9 +131,72 @@ const ProfileEditorPage: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      <Toast config={toastConfig} /> 
     </KeyboardAvoidingView>
   );
 };
+
+// Define the custom toast styles outside the component
+const toastConfig = {
+  successToast: ({ text1, text2 }) => (
+    <View style={customStyles.successToast}>
+      <Text style={customStyles.toastText}>{text1}</Text>
+      {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
+    </View>
+  ),
+  errorToast: ({ text1, text2 }) => (
+    <View style={customStyles.errorToast}>
+      <Text style={customStyles.toastText}>{text1}</Text>
+      {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
+    </View>
+  ),
+  infoToast: ({ text1, text2 }) => (
+    <View style={customStyles.infoToast}>
+      <Text style={customStyles.toastText}>{text1}</Text>
+      {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
+    </View>
+  ),
+};
+
+const customStyles = StyleSheet.create({
+  successToast: {
+    height: 60,
+    width: '90%',
+    backgroundColor: Colors.Light_Teal, 
+    padding: 10,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorToast: {
+    height: 60,
+    width: '90%',
+    backgroundColor: Colors.Light_Red, 
+    padding: 10,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  infoToast: {
+    height: 60,
+    width: '90%',
+    backgroundColor: '#17a2b8', // Blue background for info
+    padding: 10,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  toastText: {
+    color: '#ffffff', // White text color
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  toastSubText: {
+    color: '#ffffff', // White text color for additional information
+    fontSize: 14,
+  },
+  // Other styles...
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -190,6 +262,25 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginTop: 20,
+    gap: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  buttonSave: {
+    backgroundColor: Colors.Teal,
+    marginBottom: 20,
+    width: 270,
+    padding: 15,
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  buttonEdit: {
+    backgroundColor: Colors.Teal,
+    marginBottom: 20,
+    width: 100,
+    padding: 15,
+    borderRadius: 20,
+    alignItems: 'center',
   },
   button: {
     backgroundColor: Colors.Teal,

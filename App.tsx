@@ -8,6 +8,7 @@ import { Colors } from './src/utils/colors';
 import { fonts } from './src/utils/fonts';
 import ProfileEditorPage from './src/pages/profileEditorPage';
 import BalanceManager from './src/components/BalanceManager';
+import Toast from 'react-native-toast-message';
 
 
 const Stack = createStackNavigator();
@@ -45,6 +46,7 @@ export default function App() {
   return (
 
     <NavigationContainer>
+      <Toast/>
       <Stack.Navigator initialRouteName="SplashScreen"  screenOptions={{
                     headerTitleAlign: 'center',  
                     headerStyle: {
@@ -58,8 +60,8 @@ export default function App() {
                 }}>
         <Stack.Screen name="Dashboard" component={TabNavigator} options={{ headerShown: false, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'} }} />
         <Stack.Screen name="AddExpenses" component={AddExpenses} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Add Expenses' }} />
-        <Stack.Screen name="ProfileEditor" component={ProfileEditorPage} options={{ title: 'Profile Editor' }} />
-        <Stack.Screen name="BalanceManager" component={BalanceManager} options={{ title: 'Add Balance' }} />
+        <Stack.Screen name="ProfileEditor" component={ProfileEditorPage} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Profile Page' }} />
+        <Stack.Screen name="BalanceManager" component={BalanceManager} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Add Balance' }} />
       </Stack.Navigator>
     </NavigationContainer>
 

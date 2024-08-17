@@ -22,6 +22,7 @@ import { fonts } from '../utils/fonts';
 import { Feather } from '@expo/vector-icons';
 import { initializeDatabase, saveExpense } from '../utils/Database/db';
 import Balance from '../components/Balance';
+import Toast from 'react-native-toast-message';
 
 interface Category {
   label: string;
@@ -80,32 +81,49 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image.');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to pick image.',
+      });
     }
   };
 
   const handleSave = async () => {
     if (itemName.length < MIN_ITEM_NAME_LENGTH) {
-      Alert.alert(
-        'Validation Error',
-        `Item name must contain at least ${MIN_ITEM_NAME_LENGTH} characters.`
-      );
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: `Item name must contain at least ${MIN_ITEM_NAME_LENGTH} characters.`,
+      });
       return;
     }
 
     if (!date) {
-      Alert.alert('Validation Error', 'Please select a date.');
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please select a date.',
+      });
       return;
     }
 
     if (!selectedCategory) {
-      Alert.alert('Validation Error', 'Please select a category.');
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please select a category.',
+      });
       return;
     }
 
     const expenseAmountValue = parseFloat(expenseAmount);
     if (isNaN(expenseAmountValue) || expenseAmountValue <= 0) {
-      Alert.alert('Validation Error', 'Expense amount must be greater than 0.');
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Expense amount must be greater than 0.',
+      });
       return;
     }
 
@@ -122,12 +140,11 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       await initializeDatabase();
       await saveExpense(expense);
 
-      Alert.alert('Success', 'Expense saved successfully!', [
-        {
-          text: 'OK',
-          onPress: () => navigation.navigate('Home'),
-        },
-      ]);
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Expense saved successfully!',
+      });
 
       setItemName('');
       setDate(now);
@@ -136,9 +153,14 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       setDescription('');
       setImage(null);
       setSelectedCategory(null);
+      navigation.navigate('Home');
     } catch (error) {
       console.error('Error saving expense:', error);
-      Alert.alert('Error', 'Failed to save expense.');
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to save expense.',
+      });
     }
   };
 
@@ -148,7 +170,11 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
     if (event.type === 'set' && selectedDate) {
       // Prevent selecting future dates
       if (selectedDate > now) {
-        Alert.alert('Invalid Date', 'Future dates are not allowed.');
+        Toast.show({
+          type: 'error',
+          text1: 'Invalid Date',
+          text2: 'Future dates are not allowed.',
+        });
         return;
       }
       setDate(selectedDate);
@@ -169,11 +195,11 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
 
   return (
     <KeyboardAvoidingView
-    style={styles.container}
-    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Balance/>
+        <Balance />
         <View style={styles.formContainer}>
           <View style={styles.fieldContainer}>
             <TextInput
@@ -286,6 +312,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
+      <Toast/>
     </KeyboardAvoidingView>
   );
 };
@@ -398,7 +425,7 @@ const styles = StyleSheet.create({
   },
   modalItem: {
     padding: 15,
-    marginBottom: 5, 
+    marginBottom: 5,
   },
   modalItemText: {
     fontSize: 16,

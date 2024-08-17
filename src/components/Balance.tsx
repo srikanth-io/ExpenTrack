@@ -1,12 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { getBalance } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 
+type RootStackParamList = {
+  Balance: undefined;
+  BalanceManager: undefined;
+};
+
+type NavigationProp = StackNavigationProp<RootStackParamList, 'Balance'>;
+
 const Balance: React.FC = () => {
   const [balance, setBalance] = useState<number>(0.0);
   const [isBalanceUpdated, setIsBalanceUpdated] = useState<boolean>(true); 
+  const navigation = useNavigation<NavigationProp>();
 
   useEffect(() => {
     const fetchBalance = async () => {
@@ -22,15 +32,14 @@ const Balance: React.FC = () => {
     if (isBalanceUpdated) {
       fetchBalance();
     }
-  }, [isBalanceUpdated]); // Only re-run the effect if `isBalanceUpdated` changes
+  }, [isBalanceUpdated]); 
 
-  const updateBalance = (newBalance: number) => {
-    setBalance(newBalance);
-    setIsBalanceUpdated(true); // Set the update flag when balance changes
+  const navigateToBalanceManager = () => {
+    navigation.navigate('BalanceManager');
   };
 
   return (
-    <TouchableOpacity style={styles.balanceContainer}>
+    <TouchableOpacity style={styles.balanceContainer} onPress={navigateToBalanceManager}>
       <Text style={styles.balanceText}>Amount Balance</Text>
       <Text style={styles.balanceTextAmount}>₹ {balance.toFixed(2)}</Text>
     </TouchableOpacity>
