@@ -122,7 +122,7 @@ const ProfileEditorPage: React.FC = () => {
                 <Text style={styles.buttonText}>Save</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.buttonEdit} onPress={handleEditToggle}>
-                <Text style={styles.buttonText}><Feather name="edit" size={30} color={Colors.Background_Color} /></Text>
+                <Text style={styles.buttonText}><Feather name="edit" size={25} color={Colors.Background_Color} /></Text>
               </TouchableOpacity>
           </View>
 
@@ -278,7 +278,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Teal,
     marginBottom: 20,
     width: 100,
-    padding: 15,
+    padding: 20,
     borderRadius: 20,
     alignItems: 'center',
   },

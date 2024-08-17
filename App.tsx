@@ -9,6 +9,8 @@ import { fonts } from './src/utils/fonts';
 import ProfileEditorPage from './src/pages/profileEditorPage';
 import BalanceManager from './src/components/BalanceManager';
 import Toast from 'react-native-toast-message';
+import RegisterPage from './src/pages/RegisterPage';
+import LoginPage from './src/pages/LoginPage';
 
 
 const Stack = createStackNavigator();
@@ -57,7 +59,9 @@ export default function App() {
                         fontWeight: 'bold',
                     },
                     ...TransitionPresets.SlideFromRightIOS, 
-                }}>
+                  }}>
+        <Stack.Screen name="Login" component={LoginPage} options={{ headerShown: false}} />
+        <Stack.Screen name="Registration" component={RegisterPage} options={{ headerShown: false}} />
         <Stack.Screen name="Dashboard" component={TabNavigator} options={{ headerShown: false, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'} }} />
         <Stack.Screen name="AddExpenses" component={AddExpenses} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Add Expenses' }} />
         <Stack.Screen name="ProfileEditor" component={ProfileEditorPage} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Profile Page' }} />
