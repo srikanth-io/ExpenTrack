@@ -8,6 +8,7 @@ import HomePage from '../pages/HomePage';
 import { fonts } from '../utils/fonts';
 import { Colors } from '../utils/colors';
 import ProfileEditorPage from '../pages/profileEditorPage';
+import NewsPage from '../pages/NewsPage';
 
 type TabBarIconProps = {
   name: string | any;
@@ -20,7 +21,7 @@ type TabParamList = {
   Home: undefined;
   Transaction: undefined;
   AddExpenses: undefined;
-  Budget: undefined;
+  News: undefined;
   Profile: undefined;
 };
 export type TabNavigationProp = BottomTabNavigationProp<TabParamList>;
@@ -69,9 +70,9 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
           } else if (route.name === 'Transaction') {
             iconSet = 'Entypo';
             iconName = focused ? 'swap' : 'swap';
-          } else if (route.name === 'Budget') {
+          } else if (route.name === 'News') {
             iconSet = 'MaterialCommunityIcons';
-            iconName = focused ? 'chart-pie' : 'chart-pie';
+            iconName = focused ? 'newspaper' : 'newspaper';
           } else if (route.name === 'Profile') {
             iconSet = 'FontAwesome';
             iconName = focused ? 'user' : 'user';
@@ -88,8 +89,8 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
             label = 'Home';
           } else if (route.name === 'Transaction') {
             label = 'Transaction';
-          } else if (route.name === 'Budget') {
-            label = 'Budget';
+          } else if (route.name === 'News') {
+            label = 'News';
           } else if (route.name === 'Profile') {
             label = 'Profile';
           } else {
@@ -134,8 +135,8 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
         }}
       />
       <Tab.Screen
-        name="Budget"
-        component={AllExpensesPage}
+        name="News"
+        component={NewsPage}
         options={{
           headerShown: false,
         }}

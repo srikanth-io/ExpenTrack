@@ -128,12 +128,13 @@ const Register: React.FC<Props> = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
+      
+        <View style={styles.formContainer}>
         <View style={styles.RegisterTextHead}>
           <Text style={styles.RegisterText}>Let's get</Text>
           <Text style={styles.RegisterTextTwo}>Started</Text>
         </View>
 
-        <View style={styles.formContainer}>
           <View style={styles.fieldContainer}>
             <TextInput
               style={[styles.input, errors.username && styles.errorInput]}
@@ -263,19 +264,19 @@ const customStyles = StyleSheet.create({
   infoToast: {
     height: 60,
     width: '90%',
-    backgroundColor: '#17a2b8', // Blue background for info
+    backgroundColor: '#17a2b8', 
     padding: 10,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   toastText: {
-    color: '#ffffff', // White text color
+    color: Colors.Text_Color, 
     fontSize: 16,
     fontWeight: 'bold',
   },
   toastSubText: {
-    color: '#ffffff', // White text color for additional information
+    color: Colors.Text_Color, 
     fontSize: 14,
   },
 });
@@ -287,7 +288,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Background_Color,
   },
   RegisterTextHead: {
-    top: 100,
     paddingLeft: 5,
   },
   RegisterText: {
@@ -340,9 +340,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginHorizontal : 5,
     color: Colors.Dark_Teal,
+    fontFamily : fonts.PoppinsSemiBold,
     marginRight: 10,
-},
-buttonContainer: {
+  },
+  buttonContainer: {
     marginTop: 20,
   },
   button: {
@@ -363,6 +364,7 @@ buttonContainer: {
   },
   loginText: {
     fontSize: 16,
+    fontFamily : fonts.PoppinsSemiBold,
     color: Colors.Dark_Teal,
     marginRight: 5,
   },

@@ -29,3 +29,14 @@ export type RootStackParamList = {
 export type ExpenseItem = Expense;
 }
 
+
+export type User = {
+  id: number;
+  username: string;
+  name: string;
+  email: string;
+  password: string;
+  token: string;
+};
+
+
