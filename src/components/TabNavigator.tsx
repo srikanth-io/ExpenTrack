@@ -138,7 +138,8 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
         name="News"
         component={NewsPage}
         options={{
-          headerShown: false,
+          headerShown: true,
+          headerTitleAlign : 'center',
         }}
       />
       <Tab.Screen

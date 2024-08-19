@@ -20,13 +20,13 @@ type Expense = {
 let isDataChanged = false;
 
 const AllExpensesPage: React.FC = () => {
-  const [expenses, setExpenses] = useState([]);
+  const [expenses, setExpenses] = useState<Expense[]>([]);
 
   const fetchDataIfNeeded = async () => {
     if (isDataChanged) {
       try {
-        const expenses = await getAllExpenses();
-        setExpenses(expenses);
+        const fetchedExpenses = await getAllExpenses();
+        setExpenses((prevExpenses) => [...prevExpenses, ...fetchedExpenses]);
         isDataChanged = false; 
       } catch (error) {
         console.error('Error fetching all expenses:', error);

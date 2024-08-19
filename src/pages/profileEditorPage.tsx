@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 
 const ProfileEditorPage: React.FC = () => {
-  const [profilePhoto, setProfilePhoto] = useState<string>('https://via.placeholder.com/150');
+  const [profilePhoto, setProfilePhoto] = useState<string>('https://media.licdn.com/dms/image/v2/D5603AQHdC0RAcIH2mA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1698160153100?e=2147483647&v=beta&t=2uYMCVYQBGMLnJLzO9Z7Xk0PSm1r7sPgdLW9OZB98XA');
   const [username] = useState('JohnDoe'); 
   const [name, setName] = useState('John Doe');
   const [email, setEmail] = useState('johndoe@example.com');
@@ -60,7 +60,7 @@ const ProfileEditorPage: React.FC = () => {
   };
 
   const navigateToBalanceManager = () => {
-    navigation.navigate('BalanceManager');  
+    navigation.navigate('BalanceManager' as never);  
   };
 
   return (
@@ -131,26 +131,26 @@ const ProfileEditorPage: React.FC = () => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <Toast config={toastConfig} /> 
+      <Toast config={toastConfig as any} /> 
     </KeyboardAvoidingView>
   );
 };
 
 // Define the custom toast styles outside the component
 const toastConfig = {
-  successToast: ({ text1, text2 }) => (
+  successToast: ({ text1, text2 }: { text1: string; text2?: string }) => (
     <View style={customStyles.successToast}>
       <Text style={customStyles.toastText}>{text1}</Text>
       {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
     </View>
   ),
-  errorToast: ({ text1, text2 }) => (
+  errorToast: ({ text1, text2 }: { text1: string; text2?: string }) => (
     <View style={customStyles.errorToast}>
       <Text style={customStyles.toastText}>{text1}</Text>
       {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
     </View>
   ),
-  infoToast: ({ text1, text2 }) => (
+  infoToast: ({ text1, text2 }: { text1: string; text2?: string }) => (
     <View style={customStyles.infoToast}>
       <Text style={customStyles.toastText}>{text1}</Text>
       {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}

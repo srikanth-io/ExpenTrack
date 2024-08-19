@@ -2,18 +2,20 @@ import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
 import React from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Colors } from '../utils/colors';
-import Balance from './Balance';
-
-const Profile = () => {
-  return (
+import { useNavigation } from '@react-navigation/native';
+import notification from './notification';
+  
+  const Profile = () => {
+    const navigation = useNavigation();
+    return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.outlineWrapper}>
+      <TouchableOpacity style={styles.outlineWrapper} onPress={() => navigation.navigate('ProfileEditorPage')}>
         <Image
           source={{ uri: 'https://media.licdn.com/dms/image/v2/D5603AQHdC0RAcIH2mA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1698160153100?e=2147483647&v=beta&t=2uYMCVYQBGMLnJLzO9Z7Xk0PSm1r7sPgdLW9OZB98XA' }}
           style={styles.profileImage}
         />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.iconContainer}>
+      <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('notification')}>
         <Ionicons name="notifications-outline" size={28} style = {{color : Colors.Teal}}/>
       </TouchableOpacity>
     </View>

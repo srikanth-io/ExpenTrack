@@ -11,6 +11,7 @@ import BalanceManager from './src/components/BalanceManager';
 import Toast from 'react-native-toast-message';
 import RegisterPage from './src/pages/RegisterPage';
 import LoginPage from './src/pages/LoginPage';
+import Notification from './src/components/notification';
 
 
 const Stack = createStackNavigator();
@@ -66,12 +67,17 @@ export default function App() {
         <Stack.Screen name="AddExpenses" component={AddExpenses} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Add Expenses' }} />
         <Stack.Screen name="ProfileEditor" component={ProfileEditorPage} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Profile Page' }} />
         <Stack.Screen name="BalanceManager" component={BalanceManager} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Add Balance' }} />
+          
+        <Stack.Screen name="ProfileEditorPage" component={ProfileEditorPage} />
+        <Stack.Screen name="notification" component={Notification} />
+      
       </Stack.Navigator>
     </NavigationContainer>
 
   );
 }
 
+
 async function loadFontsAndDependencies() {
-  await new Promise(resolve => setTimeout(resolve, 3000)); 
+  await new Promise(resolve => setTimeout(resolve, 5000)); 
 }

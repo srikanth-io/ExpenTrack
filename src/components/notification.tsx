@@ -4,29 +4,24 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
+// Set notification handler
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
-    shouldPlaySound: false,
+    shouldPlaySound: true,
     shouldSetBadge: false,
   }),
 });
 
-export default function App() {
+function Notification() {
   const [expoPushToken, setExpoPushToken] = useState('');
-  const [channels, setChannels] = useState<Notifications.NotificationChannel[]>([]);
-  const [notification, setNotification] = useState<Notifications.Notification | undefined>(
-    undefined
-  );
+  const [notification, setNotification] = useState<Notifications.Notification | undefined>(undefined);
   const notificationListener = useRef<Notifications.Subscription>();
   const responseListener = useRef<Notifications.Subscription>();
 
   useEffect(() => {
     registerForPushNotificationsAsync().then(token => token && setExpoPushToken(token));
 
-    if (Platform.OS === 'android') {
-      Notifications.getNotificationChannelsAsync().then(value => setChannels(value ?? []));
-    }
     notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
       setNotification(notification);
     });
@@ -43,42 +38,33 @@ export default function App() {
     };
   }, []);
 
+  // Simulate a database change and trigger a notification
+  const simulateDatabaseChange = async () => {
+    // Here you should integrate with your database change detection
+    await schedulePushNotification('Database Change Detected', 'A change has occurred in your database.');
+  };
+
   return (
-    <View
-      style={{
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'space-around',
-      }}>
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'space-around' }}>
       <Text>Your expo push token: {expoPushToken}</Text>
-      <Text>{`Channels: ${JSON.stringify(
-        channels.map(c => c.id),
-        null,
-        2
-      )}`}</Text>
       <View style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <Text>Title: {notification && notification.request.content.title} </Text>
+        <Text>Title: {notification && notification.request.content.title}</Text>
         <Text>Body: {notification && notification.request.content.body}</Text>
         <Text>Data: {notification && JSON.stringify(notification.request.content.data)}</Text>
       </View>
-      <Button
-        title="Press to schedule a notification"
-        onPress={async () => {
-          await schedulePushNotification();
-        }}
-      />
+      <Button title="Simulate Database Change" onPress={simulateDatabaseChange} />
     </View>
   );
 }
 
-async function schedulePushNotification() {
+async function schedulePushNotification(title: string, body: string) {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: "You've got mail! 📬",
-      body: 'Here is the notification body',
-      data: { data: 'goes here', test: { test1: 'more data' } },
+      title,
+      body,
+      data: { data: 'additional data' },
     },
-    trigger: { seconds: 2 },
+    trigger: { seconds: 1 }, // Trigger after 1 second
   });
 }
 
@@ -105,9 +91,6 @@ async function registerForPushNotificationsAsync() {
       alert('Failed to get push token for push notification!');
       return;
     }
-    // Learn more about projectId:
-    // https://docs.expo.dev/push-notifications/push-notifications-setup/#configure-projectid
-    // EAS projectId is used here.
     try {
       const projectId =
         Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
@@ -129,3 +112,5 @@ async function registerForPushNotificationsAsync() {
 
   return token;
 }
+
+export default Notification;
