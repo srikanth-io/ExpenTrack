@@ -47,6 +47,7 @@ const BalanceManager: React.FC = () => {
 
     try {
       const updatedBalance = balance + newAmount;
+      console.log(balance, ' amount balance')
       await saveBalance(updatedBalance, { amount: newAmount, name, category, bank });
       setBalance(updatedBalance);
       Toast.show({
@@ -158,7 +159,7 @@ const BalanceManager: React.FC = () => {
         </View>
       </ScrollView>
       <Toast config={{
-        successToast: ({ text1, text2 }: { text1: string, text2?: string }) => (
+        successToast: ({ text1, text2 = '' }: { text1: string, text2?: string }) => (
           <View style={customStyles.successToast}>
             <Text style={customStyles.toastText}>{text1}</Text>
             {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}

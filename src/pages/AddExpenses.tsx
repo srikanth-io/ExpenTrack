@@ -1,20 +1,5 @@
 import React, { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  Alert,
-  Platform,
-  KeyboardAvoidingView,
-  ScrollView,
-  Modal,
-  FlatList,
-  TouchableWithoutFeedback,
-  Keyboard,
-} from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, Alert, Platform, KeyboardAvoidingView, ScrollView, Modal, FlatList, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
@@ -41,11 +26,11 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
     { label: 'Food', value: 'food' },
     { label: 'Transport', value: 'transport' },
     { label: 'Income', value: 'income' },
-    { label: 'Petrol', value: 'Petrol' },
-    { label: 'Groceries', value: 'Groceries' },
-    { label: 'Snacks', value: 'Snacks' },
-    { label: 'Festival', value: 'Festival' },
-    { label: 'Others', value: 'Others' },
+    { label: 'Petrol', value: 'petrol' },
+    { label: 'Groceries', value: 'groceries' },
+    { label: 'Snacks', value: 'snacks' },
+    { label: 'Festival', value: 'festival' },
+    { label: 'Others', value: 'others' },
   ];
 
   const formatDate = (date: Date) => {
@@ -59,7 +44,6 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
   const [itemName, setItemName] = useState('');
   const [date, setDate] = useState(now);
   const [formattedDate, setFormattedDate] = useState(formatDate(now));
-  const displayDate = formattedDate || 'Select Date';
   const [expenseAmount, setExpenseAmount] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState<any>(null);
@@ -68,27 +52,26 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleImagePick = async () => {
-    try {
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
+  try {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
 
-      if (!result.canceled) {
-        setImage(result.assets[0]);
-      }
-    } catch (error) {
-      console.error('Error picking image:', error);
-      Toast.show({
-        type: 'error',
-        text1: 'Error',
-        text2: 'Failed to pick image.',
-      });
+    if (!result.canceled && result.assets) {
+      setImage(result.assets[0]);
     }
-  };
-
+  } catch (error) {
+    console.error('Error picking image:', error);
+    Toast.show({
+      type: 'error',
+      text1: 'Error',
+      text2: 'Failed to pick image.',
+    });
+  }
+};
   const handleSave = async () => {
     if (itemName.length < MIN_ITEM_NAME_LENGTH) {
       Toast.show({
@@ -130,11 +113,14 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
     const expense = {
       itemName,
       date: formattedDate,
-      expenseAmount: expenseAmountValue,
+      expenseAmount: parseFloat(expenseAmount),
       description,
       category: selectedCategory,
       image: image ? image.uri : null,
     };
+
+    saveExpense(expense);
+    navigation.navigate('Home');
 
     try {
       await initializeDatabase();
@@ -177,12 +163,15 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
         });
         return;
       }
+
       setDate(selectedDate);
       setFormattedDate(formatDate(selectedDate));
     }
   };
 
-  const handleDatePickerPress = () => setShowDatePicker(true);
+  const handleDatePickerPress = () => {
+    setShowDatePicker(true);
+  };
 
   const handleSelectCategory = (value: string | null) => {
     setSelectedCategory(value);
@@ -216,10 +205,10 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
             >
               <Text style={styles.pickerButtonText}>
                 {selectedCategory
-                  ? categories.find(cat => cat.value === selectedCategory)?.label
+                  ? categories.find((cat) => cat.value === selectedCategory)?.label
                   : 'Select Category'}
               </Text>
-              <Feather name="chevron-down" size={24} color={Colors.Dark_Teal} />
+              <Feather name="chevron-down" size={24} color={Colors.Dark_Green} />
             </TouchableOpacity>
             <Modal
               transparent={true}
@@ -236,12 +225,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
                         keyExtractor={(item) => item.value || item.label}
                         renderItem={({ item }) => (
                           <TouchableOpacity
-                            style={[
-                              styles.modalItem,
-                              {
-                                backgroundColor: selectedCategory === item.value ? Colors.Light_Teal : Colors.Pale_Teal
-                              }
-                            ]}
+                            style={styles.modalItem}
                             onPress={() => handleSelectCategory(item.value)}
                           >
                             <Text style={styles.modalItemText}>{item.label}</Text>
@@ -259,7 +243,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
               style={styles.datePickerButton}
               onPress={handleDatePickerPress}
             >
-              <Text style={styles.datePickerText}>{displayDate}</Text>
+              <Text style={styles.datePickerText}>{formattedDate}</Text>
             </TouchableOpacity>
             {showDatePicker && (
               <DateTimePicker
@@ -271,7 +255,6 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
               />
             )}
           </View>
-
           <View style={styles.fieldContainer}>
             <TextInput
               style={styles.input}
@@ -283,7 +266,6 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
               placeholder="Expense amount"
             />
           </View>
-
           <View style={styles.fieldContainer}>
             <TextInput
               style={styles.DesInput}
@@ -304,7 +286,6 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
               <Image source={{ uri: image.uri }} style={styles.selectedImage} />
             )}
           </View>
-
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={handleSave}>
               <Text style={styles.buttonText}>Save Expense</Text>
@@ -312,10 +293,13 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
-      <Toast/>
+      <Toast />
     </KeyboardAvoidingView>
   );
 };
+
+
+export default AddExpenses;
 
 const styles = StyleSheet.create({
   container: {
@@ -433,5 +417,3 @@ const styles = StyleSheet.create({
     color: Colors.Dark_Teal,
   },
 });
-
-export default AddExpenses;

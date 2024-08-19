@@ -40,3 +40,6 @@ export type User = {
 };
 
 
+export type Income = {
+  Income : any;
+}

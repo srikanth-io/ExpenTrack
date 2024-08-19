@@ -1,15 +1,14 @@
 import * as SQLite from 'expo-sqlite';
-import { type } from '../types';
+import { Income, type } from '../types';
 
-type Balance = any;
+type Balance = { amount: number };
 
 let isDataChanged = false;
 
-
-type Database = ReturnType<typeof SQLite.openDatabaseAsync>;
+type Database = ReturnType<typeof SQLite.openDatabaseSync>;
 
 const openDatabase = async (): Promise<Database> => {
-  return await SQLite.openDatabaseAsync('expense.db');
+  return SQLite.openDatabaseSync('expense.db');
 };
 
 const dbPromise = openDatabase();
@@ -17,6 +16,8 @@ const dbPromise = openDatabase();
 export const initializeDatabase = async (): Promise<void> => {
   try {
     const db = await dbPromise;
+
+    // Create tables
     await db.execAsync(`
       PRAGMA journal_mode = WAL;
       CREATE TABLE IF NOT EXISTS expenses (
@@ -31,20 +32,23 @@ export const initializeDatabase = async (): Promise<void> => {
     `);
 
     await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS income (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        source TEXT,
+        amount REAL NOT NULL,
+        date TEXT NOT NULL,
+        description TEXT
+      );
+    `);
+
+    await db.execAsync(`
       CREATE TABLE IF NOT EXISTS balance (
         id INTEGER PRIMARY KEY NOT NULL,
         amount REAL NOT NULL
       );
     `);
 
-    const tableInfo = await db.getAllAsync('PRAGMA table_info(expenses)');
-    const categoryColumnExists = tableInfo.some((column: any) => column.name === 'category');
-
-    if (!categoryColumnExists) {
-      await db.runAsync('ALTER TABLE expenses ADD COLUMN category TEXT');
-      console.log('Category column added to expenses table');
-    }
-
+    // Initialize balance if not present
     const result = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
     if (!result) {
       await db.runAsync('INSERT INTO balance (id, amount) VALUES (1, 0)');
@@ -56,87 +60,8 @@ export const initializeDatabase = async (): Promise<void> => {
   }
 };
 
-// Function to save an expense
-export const saveExpense = async (expense: type.Expense): Promise<void> => {
-  try {
-    const db = await dbPromise;
-
-    const result = await db.runAsync(
-      'INSERT INTO expenses (category, itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?, ?)',
-      expense.category ?? null,         
-      expense.itemName ?? null,
-      expense.date ?? null,
-      expense.expenseAmount,
-      expense.description ?? null,
-      expense.image ?? null
-    );
-
-    // Set change tracker to true
-    isDataChanged = true;
-
-    const currentBalance = await getBalance();
-    const newBalance = currentBalance - expense.expenseAmount;
-    await saveBalance(newBalance);
-
-    console.log('Expense saved!', result.lastInsertRowId, result.changes);
-  } catch (error) {
-    console.error('Error saving expense:', error);
-    throw error;
-  }
-};
-
-
-// Function to get recent expenses
-export const getRecentExpenses = async (): Promise<type.Expense[]> => {
-  try {
-    const db = await dbPromise;
-    const recentExpenses = await db.getAllAsync<type.Expense>('SELECT * FROM expenses ORDER BY id DESC LIMIT 10');
-    return recentExpenses;
-  } catch (error) {
-    console.error('Error retrieving recent expenses:', error);
-    throw error;
-  }
-};
-
-// Function to get all expenses
-export const getAllExpenses = async (): Promise<type.Expense[]> => {
-  try {
-    const db = await dbPromise;
-    const allRows = await db.getAllAsync<type.Expense>('SELECT * FROM expenses ORDER BY date DESC');
-    return allRows;
-  } catch (error) {
-    console.error('Error retrieving expenses:', error);
-    throw error;
-  }
-};
-
-// Function to get an expense by ID
-export const getExpenseById = async (id: number): Promise<type.Expense | undefined | null> => {
-  try {
-    const db = await dbPromise;
-    const expense = await db.getFirstAsync<type.Expense>('SELECT * FROM expenses WHERE id = ?', id);
-    return expense;
-  } catch (error) {
-    console.error('Error retrieving expense by ID:', error);
-    throw error;
-  }
-};
-
-// Function to get the balance
-export const getBalance = async (): Promise<number> => {
-  try {
-    const db = await dbPromise;
-    const result = await db.getFirstAsync<Balance>('SELECT amount FROM balance WHERE id = 1');
-    const balance = result?.amount ?? 0;
-    return balance;
-  } catch (error) {
-    console.error('Error retrieving balance:', error);
-    throw error;
-  }
-};
-
-// Function to save the balance with non-negative check
-export const saveBalance = async (amount: number, p0: { amount: number; name: string; category: string; bank: string; }): Promise<void> => {
+// Function to Save Balance
+export const saveBalance = async (amount: number): Promise<void> => {
   try {
     const db = await dbPromise;
     const nonNegativeAmount = Math.max(0, amount); 
@@ -155,36 +80,150 @@ export const saveBalance = async (amount: number, p0: { amount: number; name: st
   }
 };
 
-// Function to update an expense
-export const updateExpense = async (expense: type.Expense): Promise<void> => {
+// Function to Get Balance
+export const getBalance = async (): Promise<number> => {
+  try {
+    const db = await dbPromise;
+    const result = await db.getFirstAsync<Balance>('SELECT amount FROM balance WHERE id = 1');
+    return result?.amount ?? 0;
+  } catch (error) {
+    console.error('Error retrieving balance:', error);
+    throw error;
+  }
+};
+
+// Function to Save Expense
+export const saveExpense = async (expense: type.Expense): Promise<void> => {
   try {
     const db = await dbPromise;
 
-    // Get the current expense to update balance
-    const currentExpense = await getExpenseById(expense.id);
+    await db.runAsync(
+      'INSERT INTO expenses (category, itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?, ?)',
+      expense.category ?? null,         
+      expense.itemName ?? null,
+      expense.date ?? null,
+      expense.expenseAmount,
+      expense.description ?? null,
+      expense.image ?? null
+    );
 
-    if (currentExpense) {
-      // Update the expense
-      await db.runAsync(
-        'UPDATE expenses SET category = ?, itemName = ?, date = ?, expenseAmount = ?, description = ?, image = ? WHERE id = ?',
-        expense.category,           
-        expense.itemName,
-        expense.date ?? null,
-        expense.expenseAmount,
-        expense.description ?? null,
-        expense.image ?? null,
-        expense.id
-      );
+    // Set change tracker to true
+    isDataChanged = true;
 
-      // Update the balance
-      const currentBalance = await getBalance();
-      const newBalance = currentBalance + (currentExpense.expenseAmount - expense.expenseAmount);
-      await saveBalance(newBalance);
+    const currentBalance = await getBalance();
+    const newBalance = currentBalance - expense.expenseAmount;
+    await saveBalance(newBalance);
 
-      console.log('Expense updated!');
-    }
+    console.log('Expense saved!');
   } catch (error) {
-    console.error('Error updating expense:', error);
+    console.error('Error saving expense:', error);
+    throw error;
+  }
+};
+
+// Function to Get Recent Expenses
+export const getRecentExpenses = async (): Promise<type.Expense[]> => {
+  try {
+    const db = await dbPromise;
+    return await db.getAllAsync<type.Expense>('SELECT * FROM expenses ORDER BY id DESC LIMIT 10');
+  } catch (error) {
+    console.error('Error retrieving recent expenses:', error);
+    throw error;
+  }
+};
+
+// Function to Get All Expenses
+export const getAllExpenses = async (): Promise<type.Expense[]> => {
+  try {
+    const db = await dbPromise;
+    return await db.getAllAsync<type.Expense>('SELECT * FROM expenses ORDER BY date DESC');
+  } catch (error) {
+    console.error('Error retrieving all expenses:', error);
+    throw error;
+  }
+};
+
+// Function to Get Expense by ID
+export const getExpenseById = async (id: number): Promise<type.Expense | undefined | null> => {
+  try {
+    const db = await dbPromise;
+    return await db.getFirstAsync<type.Expense>('SELECT * FROM expenses WHERE id = ?', id);
+  } catch (error) {
+    console.error('Error retrieving expense by ID:', error);
+    throw error;
+  }
+};
+
+// Function to Save Income
+export const saveIncome = async (income: type.Income): Promise<void> => {
+  try {
+    const db = await dbPromise;
+
+    await db.runAsync(
+      'INSERT INTO income (source, amount, date, description) VALUES (?, ?, ?, ?)',
+      income.source ?? null,         
+      income.amount,
+      income.date ?? null,
+      income.description ?? null
+    );
+
+    // Update income summary
+    const currentSummary = await db.getFirstAsync<type.Income>('SELECT total_income FROM income WHERE date = ?', income.date);
+    const newTotalIncome = (currentSummary?.total_income ?? 0) + income.amount;
+    await saveIncomeSummary(newTotalIncome, income.date);
+
+    // Set change tracker to true
+    isDataChanged = true;
+
+    const currentBalance = await getBalance();
+    const newBalance = currentBalance + income.amount;
+    await saveBalance(newBalance);
+
+    console.log('Income saved and summary updated!');
+  } catch (error) {
+    console.error('Error saving income:', error);
+    throw error;
+  }
+};
+
+// Function to Save Income Summary
+export const saveIncomeSummary = async (totalIncome: number, date: string): Promise<void> => {
+  try {
+    const db = await dbPromise;
+
+    await db.runAsync(
+      'INSERT INTO income (source, amount, date, description) VALUES (?, ?, ?, ?)',
+      'Summary',
+      totalIncome,
+      date,
+      null
+    );
+
+    console.log('Income summary saved!');
+  } catch (error) {
+    console.error('Error saving income summary:', error);
+    throw error;
+  }
+};
+
+// Function to Get Recent Income Summary
+export const getRecentIncomeSummary = async (): Promise<Income[]> => {
+  try {
+    const db = await dbPromise;
+    return await db.getAllAsync<Income>('SELECT * FROM income ORDER BY date DESC LIMIT 10');
+  } catch (error) {
+    console.error('Error retrieving recent income summary:', error);
+    throw error;
+  }
+};
+
+// Function to Get All Income
+export const getAllIncome = async (): Promise<Income[]> => {
+  try {
+    const db = await dbPromise;
+    return await db.getAllAsync<Income>('SELECT * FROM income ORDER BY date DESC');
+  } catch (error) {
+    console.error('Error retrieving income:', error);
     throw error;
   }
 };

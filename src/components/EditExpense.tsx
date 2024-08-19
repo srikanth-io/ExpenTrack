@@ -18,6 +18,7 @@ import { fonts } from '../utils/fonts';
 import { updateExpense, getBalance } from '../utils/Database/db'; 
 
 export interface Expense {
+  category: string;
   id?: number;
   itemName: string;
   date?: string;

@@ -11,7 +11,9 @@ import BalanceManager from './src/components/BalanceManager';
 import Toast from 'react-native-toast-message';
 import RegisterPage from './src/pages/RegisterPage';
 import LoginPage from './src/pages/LoginPage';
-import Notification from './src/components/notification';
+import Notification from './src/pages/Notification';
+import Income from './src/components/Income';
+import Expenses from './src/components/Expenses';
 
 
 const Stack = createStackNavigator();
@@ -69,7 +71,10 @@ export default function App() {
         <Stack.Screen name="BalanceManager" component={BalanceManager} options={{ headerShown: true, headerTitleStyle : { fontFamily : fonts.PoppinsRegular, fontWeight : 'bold'}, headerTitle: 'Add Balance' }} />
           
         <Stack.Screen name="ProfileEditorPage" component={ProfileEditorPage} />
-        <Stack.Screen name="notification" component={Notification} />
+        <Stack.Screen name="Notification" component={Notification} />
+
+        <Stack.Screen name="IncomeList" component={Income} />
+        <Stack.Screen name="ExpensesList" component={Expenses} />
       
       </Stack.Navigator>
     </NavigationContainer>

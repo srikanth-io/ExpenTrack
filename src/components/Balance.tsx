@@ -52,6 +52,7 @@ const styles = StyleSheet.create({
     padding: 5,
     alignItems: 'center',
     marginTop : -10,
+    width : '60%',
   },
   balanceTextAmount: {
     fontSize: 40,

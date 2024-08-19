@@ -3,7 +3,7 @@ import React from 'react';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Colors } from '../utils/colors';
 import { useNavigation } from '@react-navigation/native';
-import notification from './notification';
+import Notification from '../pages/Notification';
   
   const Profile = () => {
     const navigation = useNavigation();
@@ -15,7 +15,7 @@ import notification from './notification';
           style={styles.profileImage}
         />
       </TouchableOpacity>
-      <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('notification')}>
+      <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Notification')}>
         <Ionicons name="notifications-outline" size={28} style = {{color : Colors.Teal}}/>
       </TouchableOpacity>
     </View>

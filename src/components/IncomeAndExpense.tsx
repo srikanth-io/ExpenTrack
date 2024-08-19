@@ -1,18 +1,19 @@
+// components/IncomeAndExpense.js
+
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
+import { useNavigation } from '@react-navigation/native';
 
 const IncomeAndExpense = () => {
   const [income, setIncome] = useState(0);
   const [expense, setExpense] = useState(0);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    // Fetch data from your database here
-    // For example, if you're using an async function to get the data:
     const fetchData = async () => {
       try {
-        // Replace with your actual fetch logic
         const incomeData = await getIncomeFromDB();
         const expenseData = await getExpenseFromDB();
 
@@ -26,17 +27,25 @@ const IncomeAndExpense = () => {
     fetchData();
   }, []);
 
+  const handleIncomePress = () => {
+    navigation.navigate('IncomeList');
+  };
+
+  const handleExpensePress = () => {
+    navigation.navigate('ExpensesList');
+  };
+
   return (
     <View style={styles.amountsContainer}>
       <View style={styles.IncExpContainer}>
-        <TouchableOpacity style={styles.IncContainer}>
+        <TouchableOpacity style={styles.IncContainer} onPress={handleIncomePress}>
           <Image style={{ tintColor: Colors.Teal, height: 50, width: 50 }} source={require('../../assets/CustomIcons/income.png')} />
           <View>
             <Text style={styles.IncomeAmountsText}>Income</Text>
             <Text style={styles.IncomeAmounts}>₹ {income}</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.ExpContainer}>
+        <TouchableOpacity style={styles.ExpContainer} onPress={handleExpensePress}>
           <Image style={{ tintColor: Colors.Red, height: 50, width: 50 }} source={require('../../assets/CustomIcons/expense.png')} />
           <View>
             <Text style={styles.ExpenseAmountText}>Expense</Text>
@@ -47,8 +56,6 @@ const IncomeAndExpense = () => {
     </View>
   );
 };
-
-export default IncomeAndExpense;
 
 const styles = StyleSheet.create({
   amountsContainer: {
@@ -102,6 +109,8 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsBold,
   },
 });
+
+export default IncomeAndExpense;
 
 // Example functions to fetch data from DB
 async function getIncomeFromDB() {
