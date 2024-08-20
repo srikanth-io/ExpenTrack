@@ -4,6 +4,7 @@ import { getAllExpenses } from '../utils/Database/db';
 import { type } from '../utils/types';
 import CategoryIcon from '../components/categoriesIcon'; 
 import { Colors } from '../utils/colors';
+import { fonts } from '../utils/fonts';
 
 const ExpensesList = () => {
   const [expenses, setExpenses] = useState<type.Expense[]>([]);
@@ -52,8 +53,8 @@ const ExpensesList = () => {
 
 const styles = StyleSheet.create({
   itemContainer: {
-    backgroundColor: Colors.Pale_Teal, 
-    padding: 25,
+    backgroundColor: Colors.Light_Red, 
+    padding: 15,
     marginVertical: 5,
     borderRadius: 20, 
     flexDirection: 'row', 
@@ -63,17 +64,20 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   itemTextHead: {
-    fontSize: 20,
-    color: Colors.Text_Color, 
+    fontSize: 23,
+    fontFamily : fonts.PoppinsSemiBold,
+    color: Colors.Red,
   },
   itemText: {
     fontSize: 16,
-    color: Colors.Text_Color, 
+    fontFamily : fonts.PoppinsSemiBold,
+    color: Colors.Dark_Green, 
   },
   amountContainer: {
     alignItems: 'center',
   },
   emptyText: {
+    fontFamily : fonts.PoppinsSemiBold,
     textAlign: 'center',
     color: Colors.Text_Color,
   },
@@ -85,8 +89,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   itemTextAmount : {
-    fontSize : 30,
-    color : Colors.Text_Color,
+    fontSize : 23,
+    fontFamily : fonts.PoppinsSemiBold,
+    color : Colors.Red,
 
   }
 });

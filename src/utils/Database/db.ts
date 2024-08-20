@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
-import { Income, type } from '../types';
+import { type } from '../types';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type Balance = { amount: number };
 
@@ -30,16 +31,20 @@ export const initializeDatabase = async (): Promise<void> => {
         image TEXT
       );
     `);
+    console.log('Expenses table created or already exists.');
 
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS income (
         id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
-        source TEXT,
+        name TEXT,
         amount REAL NOT NULL,
         date TEXT NOT NULL,
-        description TEXT
+        categories TEXT,
+        bankName TEXT NOT NULL
       );
     `);
+
+    console.log('income table created or already exists.');
 
     await db.execAsync(`
       CREATE TABLE IF NOT EXISTS balance (
@@ -47,6 +52,8 @@ export const initializeDatabase = async (): Promise<void> => {
         amount REAL NOT NULL
       );
     `);
+
+    console.log('balance table created or already exists.');
 
     // Initialize balance if not present
     const result = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
@@ -61,37 +68,65 @@ export const initializeDatabase = async (): Promise<void> => {
 };
 
 // Function to Save Balance
-export const saveBalance = async (amount: number, p0: { amount: number; name: string; category: string; bank: string; }): Promise<void> => {
+// Assuming you're using AsyncStorage or any other database
+
+export const saveBalance = async (newBalance: number, balanceEntry: { amount: number; name: string; category: string; bank: string; date?: string; }) => {
   try {
-    const db = await dbPromise;
-    const nonNegativeAmount = Math.max(0, amount); 
-    const existingBalance = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
+    // Save the updated balance
+    await AsyncStorage.setItem('balance', newBalance.toString());
 
-    if (existingBalance) {
-      await db.runAsync('UPDATE balance SET amount = ? WHERE id = 1', nonNegativeAmount);
-    } else {
-      await db.runAsync('INSERT INTO balance (id, amount) VALUES (1, ?)', nonNegativeAmount);
-    }
+    // Retrieve existing balance history
+    const balanceHistory = await AsyncStorage.getItem('balanceHistory');
+    const parsedHistory = balanceHistory ? JSON.parse(balanceHistory) : [];
 
-    console.log('Balance saved!');
+    // Append the new balance entry to the history
+    parsedHistory.push(balanceEntry);
+
+    // Save the updated history back to storage
+    await AsyncStorage.setItem('balanceHistory', JSON.stringify(parsedHistory));
   } catch (error) {
-    console.error('Error saving balance:', error);
-    throw error;
+    console.error('Failed to save balance:', error);
   }
 };
+
+// export const getBalanceHistory = async () => {
+//   try {
+//     const balanceHistory = await AsyncStorage.getItem('balanceHistory');
+//     return balanceHistory ? JSON.parse(balanceHistory) : [];
+//   } catch (error) {
+//     console.error('Failed to fetch balance history:', error);
+//     return [];
+//   
+// };
+
+
+
+export const getBalanceHistory = async (): Promise<any[]> => {
+  try {
+    // Mock data for testing
+    const data = [
+      { id: 1, date: '2024-08-20T00:00:00Z', name: 'John Doe', amount: 500, category: 'Salary', bank: 'Bank A' },
+      { id: 2, date: '2024-08-19T00:00:00Z', name: 'Jane Smith', amount: 200, category: 'Gift', bank: 'Bank B' }
+    ];
+    return data;
+  } catch (error) {
+    console.error('Error fetching balance history:', error);
+    return []; // Return an empty array in case of error
+  }
+};
+
+
 
 // Function to Get Balance
-export const getBalance = async (): Promise<number> => {
+export const getBalance = async () => {
   try {
-    const db = await dbPromise;
-    const result = await db.getFirstAsync<Balance>('SELECT amount FROM balance WHERE id = 1');
-    return result?.amount ?? 0;
+    const balance = await AsyncStorage.getItem('balance');
+    return balance ? parseFloat(balance) : 0.0;
   } catch (error) {
-    console.error('Error retrieving balance:', error);
-    throw error;
+    console.error('Failed to fetch income:', error);
+    return 0.0;
   }
 };
-
 // Function to Save Expense
 export const saveExpense = async (expense: type.Expense): Promise<void> => {
   try {
@@ -112,7 +147,7 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
 
     const currentBalance = await getBalance();
     const newBalance = currentBalance - expense.expenseAmount;
-    await saveBalance(newBalance);
+await saveBalance(newBalance, { amount: newBalance, name: '', category: '', bank: '' });
 
     console.log('Expense saved!');
   } catch (error) {
@@ -120,6 +155,7 @@ export const saveExpense = async (expense: type.Expense): Promise<void> => {
     throw error;
   }
 };
+
 
 // Function to Get Recent Expenses
 export const getRecentExpenses = async (): Promise<type.Expense[]> => {
@@ -154,76 +190,22 @@ export const getExpenseById = async (id: number): Promise<type.Expense | undefin
   }
 };
 
-// Function to Save Income
-export const saveIncome = async (income: type.Income): Promise<void> => {
+// Function to save the income to the database
+export const saveIncome = async (income: number) => {
   try {
-    const db = await dbPromise;
-
-    await db.runAsync(
-      'INSERT INTO income (source, amount, date, description) VALUES (?, ?, ?, ?)',
-      income.source ?? null,         
-      income.amount,
-      income.date ?? null,
-      income.description ?? null
-    );
-
-    // Update income summary
-    const currentSummary = await db.getFirstAsync<type.Income>('SELECT total_income FROM income WHERE date = ?', income.date);
-    const newTotalIncome = (currentSummary?.total_income ?? 0) + income.amount;
-    await saveIncomeSummary(newTotalIncome, income.date);
-
-    // Set change tracker to true
-    isDataChanged = true;
-
-    const currentBalance = await getBalance();
-    const newBalance = currentBalance + income.amount;
-    await saveBalance(newBalance);
-
-    console.log('Income saved and summary updated!');
+    await AsyncStorage.setItem('income', JSON.stringify(income));
   } catch (error) {
-    console.error('Error saving income:', error);
-    throw error;
+    console.error('Failed to save income:', error);
   }
 };
 
-// Function to Save Income Summary
-export const saveIncomeSummary = async (totalIncome: number, date: string): Promise<void> => {
+// Function to fetch the income from the database
+export const getIncome = async (): Promise<number> => {
   try {
-    const db = await dbPromise;
-
-    await db.runAsync(
-      'INSERT INTO income (source, amount, date, description) VALUES (?, ?, ?, ?)',
-      'Summary',
-      totalIncome,
-      date,
-      null
-    );
-
-    console.log('Income summary saved!');
+    const income = await AsyncStorage.getItem('income');
+    return income ? JSON.parse(income) : 0;
   } catch (error) {
-    console.error('Error saving income summary:', error);
-    throw error;
-  }
-};
-
-// Function to Get Recent Income Summary
-export const getRecentIncomeSummary = async (): Promise<Income[]> => {
-  try {
-    const db = await dbPromise;
-    return await db.getAllAsync<Income>('SELECT * FROM income ORDER BY date DESC LIMIT 10');
-  } catch (error) {
-    console.error('Error retrieving recent income summary:', error);
-    throw error;
-  }
-};
-
-// Function to Get All Income
-export const getAllIncome = async (): Promise<Income[]> => {
-  try {
-    const db = await dbPromise;
-    return await db.getAllAsync<Income>('SELECT * FROM income ORDER BY date DESC');
-  } catch (error) {
-    console.error('Error retrieving income:', error);
-    throw error;
+    console.error('Failed to fetch income:', error);
+    return 0;
   }
 };

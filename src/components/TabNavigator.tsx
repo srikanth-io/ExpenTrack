@@ -158,9 +158,9 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
       />
       <Tab.Screen
         name="News"
-        
         component={NewsPage}
         options={{
+          headerStyle : {},
           headerShown: true,
           headerTitleAlign : 'center',
           headerTitle : 'News',
@@ -172,7 +172,7 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
             fontFamily: fonts.PoppinsRegular,
             fontWeight: "bold",
           },
-        }}
+         }}
       />
       <Tab.Screen
         name="Profile"

@@ -2,13 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView, Alert, Platform, KeyboardAvoidingView } from 'react-native';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
-import { getBalance, saveBalance } from '../utils/Database/db';
+import { getBalance, saveBalance, getIncome, saveIncome } from '../utils/Database/db'; 
 import Balance from './Balance';
 import Toast from 'react-native-toast-message';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 const BalanceManager: React.FC = () => {
   const [balance, setBalance] = useState<number>(0);
+  const [income, setIncome] = useState<number>(0);
   const [amount, setAmount] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [category, setCategory] = useState<string>('');
@@ -16,23 +17,25 @@ const BalanceManager: React.FC = () => {
   const [isDataChanged, setIsDataChanged] = useState<boolean>(false);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const fetchBalance = async () => {
-      try {
-        const currentBalance = await getBalance();
-        setBalance(currentBalance || 0);
-      } catch (error) {
-        console.error('Error fetching balance:', error);
-        Toast.show({
-          type: 'errorToast',
-          text1: 'Error',
-          text2: 'Failed to fetch balance.',
-        });
-      }
-    };
-
-    fetchBalance();
+  const fetchBalanceAndIncome = useCallback(async () => {
+    try {
+      const currentBalance = await getBalance() || 0;
+      const totalIncome = await getIncome() || 0;
+      setBalance(currentBalance);
+      setIncome(totalIncome); 
+    } catch (error) {
+      console.error('Error fetching balance or income:', error);
+      Toast.show({
+        type: 'errorToast',
+        text1: 'Error',
+        text2: 'Failed to fetch balance or income.',
+      });
+    }
   }, []);
+
+  useEffect(() => {
+    fetchBalanceAndIncome();
+  }, [fetchBalanceAndIncome]);
 
   const handleAddBalance = async () => {
     const newAmount = parseFloat(amount);
@@ -44,17 +47,31 @@ const BalanceManager: React.FC = () => {
       });
       return;
     }
-
+  
     try {
       const updatedBalance = balance + newAmount;
-      console.log(balance, ' amount balance')
-      await saveBalance(updatedBalance, { amount: newAmount, name, category, bank });
+      const updatedIncome = income + newAmount;
+  
+      const balanceEntry = {
+        amount: newAmount,
+        name,
+        category,
+        bank,
+        date: new Date().toISOString(),
+      };
+  
+      await saveBalance(updatedBalance, balanceEntry);
+      await saveIncome(updatedIncome);
+  
       setBalance(updatedBalance);
+      setIncome(updatedIncome);
+  
       Toast.show({
         type: 'successToast',
         text1: 'Success',
         text2: 'Balance added successfully!',
       });
+  
       setAmount('');
       setName('');
       setCategory('');
@@ -70,111 +87,55 @@ const BalanceManager: React.FC = () => {
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      const onBeforeRemove = (e: any) => {
-        if (isDataChanged) {
-          e.preventDefault();
-          Alert.alert(
-            'Discard changes?',
-            'You have unsaved changes. Are you sure you want to leave?',
-            [
-              { text: 'Cancel', style: 'cancel' },
-              { text: 'Discard', style: 'destructive', onPress: () => navigation.navigate('Home') },
-            ]
-          );
-        }
-      };
-
-      navigation.addListener('beforeRemove', onBeforeRemove);
-
-      return () => {
-        navigation.removeListener('beforeRemove', onBeforeRemove);
-      };
-    }, [navigation, isDataChanged])
-  );
-
-  const handleChangeAmountInput = (text: string) => {
-    setAmount(text.replace(/[^0-9.]/g, ''));
-    setIsDataChanged(true);
-  };
-
-  const handleChangeNameInput = (text: string) => {
-    setName(text);
-    setIsDataChanged(true);
-  };
-
-  const handleChangeCategoryInput = (text: string) => {
-    setCategory(text);
-    setIsDataChanged(true);
-  };
-
-  const handleChangeBankInput = (text: string) => {
-    setBank(text);
-    setIsDataChanged(true);
-  };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
+    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.balanceContainer}>
-          <Balance />
-        </View>
+        <Balance/>
         <View style={styles.MainContainer}>
-          <Text style={styles.AmountText}>Add Balance</Text>
-          <View style = {styles.subContainer}>
-          <Text style={styles.RupeesTxt}>₹</Text>
+            <Text style={styles.AddBalanceText}>Add Balance</Text>
+          <View style={styles.subContainer}>
+            <Text style={styles.RupeesTxt}>₹</Text>
+            <TextInput
+            style={styles.AmountInput} 
+            placeholder="0.0"/>
+          </View>
+        </View>
+        <View style={styles.formContainer}>
           <TextInput
-            style={styles.AmountInput}
+            style={styles.input}
+            placeholder="Amount"
             value={amount}
-            onChangeText={handleChangeAmountInput}
+            onChangeText={setAmount}
             keyboardType="numeric"
-            placeholder="0.00"
-            placeholderTextColor={Colors.Text_Color}
+            placeholderTextColor={Colors.Dark_Teal}
           />
-          </View>
-          <View style={styles.formContainer}>
-            <TextInput
-              style={styles.input}
-              value={name}
-              onChangeText={handleChangeNameInput}
-              placeholder="Enter name"
-            />
-            <TextInput
-              style={styles.input}
-              value={category}
-              onChangeText={handleChangeCategoryInput}
-              placeholder="Select Category"
-            />
-            <TextInput
-              style={styles.input}
-              value={bank}
-              onChangeText={handleChangeBankInput}
-              placeholder="Enter bank name"
-            />
-          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Name"
+            value={name}
+            onChangeText={setName}
+            placeholderTextColor={Colors.Dark_Teal}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Category"
+            value={category}
+            onChangeText={setCategory}
+            placeholderTextColor={Colors.Dark_Teal}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Bank"
+            value={bank}
+            onChangeText={setBank}
+            placeholderTextColor={Colors.Dark_Teal}
+          />
           <TouchableOpacity style={styles.addButton} onPress={handleAddBalance}>
             <Text style={styles.addButtonText}>Add Balance</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <Toast config={{
-        successToast: ({ text1, text2 = '' }: { text1: string, text2?: string }) => (
-          <View style={customStyles.successToast}>
-            <Text style={customStyles.toastText}>{text1}</Text>
-            {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
-          </View>
-        ),
-        errorToast: ({ text1, text2 }: { text1: string, text2?: string }) => (
-          <View style={customStyles.errorToast}>
-            <Text style={customStyles.toastText}>{text1}</Text>
-            {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
-          </View>
-        ),
-      }} />
     </KeyboardAvoidingView>
   );
 };
@@ -197,10 +158,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderTopWidth: 0.1,
   },
+  AddBalanceText : {
+    fontSize : 16,
+    fontFamily : fonts.PoppinsSemiBold,
+    color : Colors.Background_Color,
+  },
   subContainer  : {
+    position: 'absolute',
     flexDirection : 'row',
     top : -10,
     marginBottom : -15,
+    height : 200,
   },
   RupeesTxt : {
     paddingHorizontal: 10,
@@ -211,7 +179,8 @@ const styles = StyleSheet.create({
   },
   AmountText: {
     paddingHorizontal: 10,
-    fontSize: 16,
+    fontSize: 50,
+    marginBottom: 30,
     color: Colors.Text_Color,
     fontFamily: fonts.PoppinsSemiBold,
   },
@@ -226,7 +195,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsSemiBold,
     paddingHorizontal: 10,
     left : -10,
-    fontSize: 50,
+    fontSize: 40,
     color: Colors.Background_Color,
     marginBottom: 30,
   },
@@ -268,30 +237,27 @@ const styles = StyleSheet.create({
 
 const customStyles = StyleSheet.create({
   successToast: {
-    height: 50,
-    width: '90%',
-    backgroundColor: '#28a745',
-    padding: 10,
-    borderRadius: 20,
-    justifyContent: 'center',
+    padding: 15,
+    backgroundColor: Colors.Dark_Teal,
+    borderRadius: 10,
+    marginHorizontal: 20,
     alignItems: 'center',
   },
   errorToast: {
-    height: 50,
-    width: '90%',
-    backgroundColor: '#dc3545',
-    padding: 10,
-    borderRadius: 20,
-    justifyContent: 'center',
+    padding: 15,
+    backgroundColor: 'red',
+    borderRadius: 10,
+    marginHorizontal: 20,
     alignItems: 'center',
   },
   toastText: {
-    color: '#ffffff',
+    color: 'white',
+    fontFamily: fonts.PoppinsSemiBold,
     fontSize: 16,
-    fontWeight: 'bold',
   },
   toastSubText: {
-    color: '#ffffff',
+    color: 'white',
+    fontFamily: fonts.PoppinsMedium,
     fontSize: 14,
   },
 });

@@ -1,38 +1,43 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { Colors } from '../utils/colors';
-import { getAllIncome } from '../utils/Database/db'; 
+import { fonts } from '../utils/fonts';
+import { getBalanceHistory } from '../utils/Database/db';
 
-const Income = () => {
-  const [income, setIncome] = useState([]);
+const BalanceHistory: React.FC = () => {
+  const [history, setHistory] = useState<any[]>([]);
 
   useEffect(() => {
-    const fetchIncome = async () => {
+    const fetchHistory = async () => {
       try {
-        const incomeData = await getAllIncome();
-        setIncome(incomeData);
+        const balanceHistory = await getBalanceHistory();
+        console.log('Fetched balance history:', balanceHistory); // Log data to inspect structure
+        setHistory(balanceHistory);
       } catch (error) {
-        console.error('Error fetching income:', error);
+        console.error('Error fetching balance history:', error);
       }
     };
 
-    fetchIncome();
+    fetchHistory();
   }, []);
 
-  const renderItem = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Text style={styles.itemSource}>{item.source || 'Unknown Source'}</Text>
-      <Text style={styles.itemDescription}>{item.description || 'No description'}</Text>
-      <Text style={styles.itemAmount}>₹ {item.amount}</Text>
+  const renderItem = ({ item }: { item: any }) => (
+    <View style={styles.historyItem}>
+      <Text style={styles.historyText}>Date: {new Date(item.date).toLocaleDateString()}</Text>
+      <Text style={styles.historyText}>Name: {item.name}</Text>
+      <Text style={styles.historyText}>Amount: ₹ {item.amount.toFixed(2)}</Text>
+      <Text style={styles.historyText}>Category: {item.category}</Text>
+      <Text style={styles.historyText}>Bank: {item.bank}</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      <Text style={styles.historyTitle}>Balance History</Text>
       <FlatList
-        data={income}
+        data={history}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()} // Fallback to index if id is undefined
       />
     </View>
   );
@@ -44,25 +49,22 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Background_Color,
     padding: 20,
   },
-  itemContainer: {
-    padding: 15,
-    backgroundColor: Colors.Pale_Teal,
-    marginBottom: 10,
-    borderRadius: 10,
-  },
-  itemSource: {
-    fontSize: 16,
-    color: Colors.Teal,
-  },
-  itemDescription: {
-    fontSize: 14,
-    color: Colors.Teal,
-  },
-  itemAmount: {
+  historyTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.Teal,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Text_Color,
+    marginBottom: 10,
+  },
+  historyItem: {
+    padding: 10,
+    borderBottomColor: '#ccc',
+    borderBottomWidth: 1,
+  },
+  historyText: {
+    fontFamily: fonts.PoppinsRegular,
+    color: Colors.Dark_Green,
+    fontSize: 14,
   },
 });
 
-export default Income;
+export default BalanceHistory;

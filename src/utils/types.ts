@@ -42,5 +42,9 @@ export type User = {
 
 
 export type Income = {
+  source: null;
+  amount(arg0: string, arg1: any, amount: any, arg3: any, arg4: any): unknown;
+  date: null;
+  description: null;
   Income : any;
 }

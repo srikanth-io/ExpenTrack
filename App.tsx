@@ -122,7 +122,7 @@ export default function App() {
           }}
         />
         <Stack.Screen name="Notification" component={Notification} />
-        <Stack.Screen name="IncomeList" component={Income} />
+        <Stack.Screen name="IncomeList" component={Income} options={{headerTitle : 'Income Logs'}}/>
         <Stack.Screen name="ExpensesList" component={Expenses} />
       </Stack.Navigator>
     </NavigationContainer>
