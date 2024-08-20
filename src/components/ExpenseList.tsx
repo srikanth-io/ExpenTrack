@@ -5,16 +5,16 @@ import { type } from '../utils/types';
 import CategoryIcon from '../components/categoriesIcon'; 
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
+import { useNavigation } from '@react-navigation/native';
 
 const ExpensesList = () => {
   const [expenses, setExpenses] = useState<type.Expense[]>([]);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const allExpenses = await getAllExpenses();
-        // console.log('Fetched Expenses:', allExpenses);
-
         setExpenses(allExpenses);
       } catch (error) {
         console.error('Error fetching expenses:', error);
@@ -24,21 +24,26 @@ const ExpensesList = () => {
     fetchData();
   }, []);
 
+  const handlePress = (expense: type.Expense) => {
+    navigation.navigate('EditExpenses', { expense } );
+  };
+
   const renderItem = ({ item }: { item: type.Expense }) => (
-    <View style={styles.itemContainer}>
+    <TouchableOpacity style={styles.itemContainer} onPress={() => handlePress(item)}>
       <View style={styles.amountContainer}>
         <CategoryIcon 
           category={item.category} amount={0} isExpense={false}        />
       </View>
 
-      <TouchableOpacity style={styles.textContainer}>
+      <View style={styles.textContainer}>
         <Text style={styles.itemTextHead}>{item.itemName}</Text>
         <Text style={styles.itemText}>{item.date}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.containerAmount}>
+      </View>
+      
+      <View style={styles.containerAmount}>
         <Text style={styles.itemTextAmount}>₹ {item.expenseAmount.toFixed(2)}</Text>
-      </TouchableOpacity>
-    </View>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -92,10 +97,7 @@ const styles = StyleSheet.create({
     fontSize : 23,
     fontFamily : fonts.PoppinsSemiBold,
     color : Colors.Red,
-
   }
 });
 
 export default ExpensesList;
-
-

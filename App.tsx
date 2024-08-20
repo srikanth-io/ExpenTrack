@@ -17,6 +17,7 @@ import Income from "./src/components/Income";
 import Expenses from "./src/components/Expenses";
 import ProfileIcon from "./src/components/ProfileIcon";
 import NotifyIcons from './src/components/NotifyIcons';
+import EditExpense from "./src/components/EditExpense";
 
 const Stack = createStackNavigator();
 
@@ -124,6 +125,7 @@ export default function App() {
         <Stack.Screen name="Notification" component={Notification} />
         <Stack.Screen name="IncomeList" component={Income} options={{headerTitle : 'Income Logs'}}/>
         <Stack.Screen name="ExpensesList" component={Expenses} />
+        <Stack.Screen name="EditExpenses" component={EditExpense} />
       </Stack.Navigator>
     </NavigationContainer>
   );

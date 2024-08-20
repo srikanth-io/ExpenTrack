@@ -42,7 +42,7 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
   const [itemName, setItemName] = useState<string>(expense.itemName || '');
   const [date, setDate] = useState<Date>(new Date(expense.date || Date.now()));
   const [formattedDate, setFormattedDate] = useState<string>(expense.date || new Date().toLocaleDateString());
-  const [expenseAmount, setExpenseAmount] = useState<string>(expense.expenseAmount?.toString() || ''); 
+  const [expenseAmount, setExpenseAmount] = useState<string>(expense.expenseAmount.toString() || ''); 
   const [description, setDescription] = useState<string>(expense.description || '');
   const [image, setImage] = useState<{ uri: string } | null>(expense.image ? { uri: expense.image } : null);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
@@ -71,7 +71,7 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
         quality: 1,
       });
 
-      if (!result.canceled) {
+      if (!result.canceled && result.assets?.[0]) {
         setImage(result.assets[0]); 
       }
     } catch (error) {
@@ -83,13 +83,11 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
   const handleSave = async () => {
     const updatedExpenseAmount = parseFloat(expenseAmount);
 
-    // Validate expense amount
     if (isNaN(updatedExpenseAmount) || updatedExpenseAmount <= 0) {
       Alert.alert('Validation Error', 'Expense amount must be greater than 0.');
       return;
     }
 
-    // Check if balance is sufficient
     if (updatedExpenseAmount > balance) {
       Alert.alert('Limit Exceeded', 'Insufficient balance.');
       return;
@@ -101,7 +99,7 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
       date: formattedDate,
       expenseAmount: updatedExpenseAmount, 
       description,
-      // image: image ? image.uri : null,
+      image: image?.uri || null,
     };
 
     try {
@@ -125,12 +123,9 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
     <KeyboardAvoidingView
       style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={100} // Adjust this value if needed
+      keyboardVerticalOffset={100}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.balancePreview}>
-          <Text style={styles.balanceText}>Remaining Balance: ₹ {balance.toFixed(2)}</Text>
-        </View>
         <View style={styles.formContainer}>
           <Text style={styles.label}>Item Name:</Text>
           <TextInput
@@ -202,17 +197,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 20,
     right: 20,
-    backgroundColor: Colors.Grey,
+    backgroundColor: Colors.Teal,
     padding: 15,
     borderRadius: 15,
   },
   balanceText: {
-    color: Colors.White,
+    color: Colors.Text_Color,
     fontFamily: fonts.PoppinsRegular,
     fontWeight: 'bold',
     fontSize: 18,
   },
   formContainer: {
+    flex :1,
     marginTop: 70, 
   },
   label: {
@@ -222,29 +218,27 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   input: {
-    maxHeight: 150,
-    borderColor: Colors.Gray,
-    borderWidth: 2,
+    height: 60,
+    backgroundColor: Colors.Pale_Teal,
     marginBottom: 10,
     padding: 10,
-    borderRadius: 15,
+    borderRadius: 20,
     fontSize: 18,
   },
   inputDes: {
     height: 150,
     textAlignVertical: 'top', 
-    borderColor: Colors.Gray,
-    borderWidth: 2,
+    backgroundColor: Colors.Pale_Teal,
     marginBottom: 10,
     padding: 10,
-    borderRadius: 15,
+    borderRadius: 20,
     fontSize: 18,
   },
   space: {
     height: 15,
   },
   datePickerButton: {
-    borderColor: Colors.Gray,
+    borderColor: Colors.Teal,
     borderWidth: 2,
     padding: 10,
     borderRadius: 15,
@@ -261,7 +255,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   imagePicker: {
-    backgroundColor: Colors.Gray,
+    backgroundColor: Colors.Teal,
     padding: 10,
     height: 50,
     width: 150,
@@ -270,7 +264,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   imagePickerText: {
-    color: Colors.White,
+    color: Colors.Text_Color,
     fontFamily: fonts.PoppinsRegular,
     fontWeight: 'bold',
     fontSize: 18,
@@ -282,7 +276,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   saveButton: {
-    backgroundColor: Colors.Gray,
+    backgroundColor: Colors.Teal,
     padding: 10,
     height: 50,
     width: 200,
@@ -291,7 +285,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saveButtonText: {
-    color: Colors.White,
+    color: Colors.Text_Color,
     fontFamily: fonts.PoppinsRegular,
     fontWeight: 'bold',
     fontSize: 18,

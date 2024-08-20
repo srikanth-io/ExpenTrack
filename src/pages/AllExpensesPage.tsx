@@ -45,7 +45,7 @@ const AllExpensesPage: React.FC = () => {
         <Balance />
       </View>
       <View style={styles.ListContainer}>
-        <Text style={styles.ListContainerText}>All Expenses</Text>
+        <Text style={styles.ListContainerText}>All Transactions</Text>
         <ExpensesList expenses={expenses} />
       </View>
     </View>
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
   },
   ListContainer: {
     flex: 1,
-    top: 20,
+    top: -30,
     padding: 15,
     margin: -20,
   },

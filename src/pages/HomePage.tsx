@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 15,
     margin: -20,
-    top : -25,
+    top : -70,
   },
   FlexContainerList : {
     flexDirection: "column",

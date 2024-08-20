@@ -40,10 +40,12 @@ const Balance: React.FC = () => {
   };
 
   return (
-    <TouchableOpacity style={styles.balanceContainer}>
+    <TouchableOpacity style={styles.balanceContainer} onPress={navigateToBalanceManager}>
       <TouchableOpacity onPress={navigateToBalanceManager}>
+      <View style = {styles.AmountContainer}>
         <Text style={styles.balanceText}>Amount Balance</Text>
         <Text style={styles.balanceTextAmount}>₹ {balance.toFixed(2)}</Text> 
+        </View>
       </TouchableOpacity>
       <TouchableOpacity style={styles.EditIconbalance} onPress={navigateToBalanceManager}>
         <EvilIcons name="pencil" size={40} color={Colors.Teal} />
@@ -57,10 +59,18 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 5,
     left: 100,
+    top : -20,
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: -15,
     width: '60%',
+  },
+  AmountContainer : {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 15,
   },
   balanceTextAmount: {
     fontSize: 40,
@@ -70,7 +80,6 @@ const styles = StyleSheet.create({
   balanceText: {
     alignItems: 'center',
     fontSize: 18,
-    left: 15,
     top: 10,
     color: Colors.Light_Teal,
     fontFamily: fonts.PoppinsRegular,
