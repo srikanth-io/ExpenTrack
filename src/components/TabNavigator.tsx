@@ -9,6 +9,8 @@ import { fonts } from '../utils/fonts';
 import { Colors } from '../utils/colors';
 import ProfileEditorPage from '../pages/profileEditorPage';
 import NewsPage from '../pages/NewsPage';
+import NotifyIcons from './NotifyIcons';
+import ProfileIcon from './ProfileIcon';
 
 type TabBarIconProps = {
   name: string | any;
@@ -81,7 +83,7 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
             iconName = 'plus';
           }
 
-          return <TabBarIcon name={iconName} iconSet={iconSet} size={24} color={color} />;
+          return <TabBarIcon name={iconName} iconSet={iconSet} size={25} color={color} />;
         },
         tabBarLabel: ({ focused }) => {
           let label;
@@ -111,14 +113,34 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
         name="Home"
         component={HomePage}
         options={{
-          headerShown: false,
+          headerShown: true,
+          headerTitleAlign : 'center',
+          headerTitle : 'Recent Expenses',
+          headerLeft : () => <ProfileIcon/>,
+          headerLeftContainerStyle : {left: 30},
+          headerRight : () => <NotifyIcons />,
+          headerRightContainerStyle : {right: 30,},
+          headerTitleStyle: {
+            fontFamily: fonts.PoppinsRegular,
+            fontWeight: "bold",
+          },    
         }}
-      />
+        />
       <Tab.Screen
         name="Transaction"
         component={AllExpensesPage}
         options={{
-          headerShown: false,
+          headerShown: true,
+          headerTitleAlign : 'center',
+          headerTitle : 'All transactions',
+          headerLeft : () => <ProfileIcon/>,
+          headerLeftContainerStyle : {left: 30,},
+          headerRight : () => <NotifyIcons />,
+          headerRightContainerStyle : {right: 30,},
+          headerTitleStyle: {
+            fontFamily: fonts.PoppinsRegular,
+            fontWeight: "bold",
+          },
         }}
       />
       <Tab.Screen
@@ -136,20 +158,32 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
       />
       <Tab.Screen
         name="News"
+        
         component={NewsPage}
         options={{
           headerShown: true,
           headerTitleAlign : 'center',
+          headerTitle : 'News',
+          headerLeft : () => <ProfileIcon/>,
+          headerLeftContainerStyle : {left: 30,},
+          headerRight : () => <NotifyIcons />,
+          headerRightContainerStyle : {right: 30,},
+          headerTitleStyle: {
+            fontFamily: fonts.PoppinsRegular,
+            fontWeight: "bold",
+          },
         }}
       />
       <Tab.Screen
         name="Profile"
         component={ProfileEditorPage}
-        
         options={{
           headerShown: true,
-          headerTitleAlign : 'center',
-          tabBarStyle: { display: 'none' }
+          headerTitleAlign: 'left',
+          headerTitleStyle: {
+            fontFamily: fonts.PoppinsRegular,
+            fontWeight: "bold",
+          },
         }}
       />
     </Tab.Navigator>

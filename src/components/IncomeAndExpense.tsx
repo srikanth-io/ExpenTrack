@@ -1,5 +1,3 @@
-// components/IncomeAndExpense.js
-
 import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
 import React, { useState, useEffect } from 'react';
 import { Colors } from '../utils/colors';
@@ -28,11 +26,11 @@ const IncomeAndExpense = () => {
   }, []);
 
   const handleIncomePress = () => {
-    navigation.navigate('IncomeList');
+    navigation.navigate('IncomeList' as never);
   };
 
   const handleExpensePress = () => {
-    navigation.navigate('ExpensesList');
+    navigation.navigate('ExpensesList' as never);
   };
 
   return (
@@ -62,6 +60,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
+    top : -10,
   },
   IncExpContainer: {
     flexDirection: 'row',

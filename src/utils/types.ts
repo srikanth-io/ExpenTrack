@@ -4,6 +4,7 @@ import '../utils/Database/db';
 export namespace type {
 
 export interface Expense {
+    index: number;
     category: any;
     id?: number | any;
     itemName: string;

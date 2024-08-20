@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
+import { ScrollView } from 'react-native-virtualized-view'
 import { Colors } from '../utils/colors';
 import IncomeAndExpense from '../components/IncomeAndExpense';
-import Profile from '../components/profile&Notification'; 
 import Balance from '../components/Balance';
 import ExpensesList from '../components/ExpenseList';
 import { fonts } from '../utils/fonts';
@@ -23,7 +23,7 @@ const HomePage: React.FC = () => {
     if (dataChanged) {
       try {
         const fetchedExpenses = await getAllExpenses();
-        setExpenses(fetchedExpenses);
+        setExpenses(fetchedExpenses as any);
         setDataChanged(false); 
         Toast.show({
           type: 'successToast',
@@ -47,43 +47,34 @@ const HomePage: React.FC = () => {
   }, [dataChanged]);
 
   return (
+  <ScrollView style = {styles.FlexContainerList} nestedScrollEnabled={true} >
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Balance />
       </View>
       <IncomeAndExpense />
-      <View style={styles.profileContainer}>
-        <Profile />
-      </View>
       <View style={styles.listContainer}>
         <Text style={styles.listContainerText}>Recent Expenses</Text>
         <ExpensesList expenses={expenses} />
       </View>
-      <Toast config={toastConfig} /> 
+      <Toast config={toastConfig as any} /> 
     </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
-    height: '100%',
     backgroundColor: Colors.Background_Color,
   },
   headerContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     borderRadius: 15,
     alignItems: 'center',
-    top: 10,
     marginBottom: 20,
-    height: 100,
-    marginTop: 30,
-  },
-  profileContainer: {
-    top: -200,
-    left: 10,
   },
   listContainerText: {
     fontSize: 23,
@@ -93,10 +84,12 @@ const styles = StyleSheet.create({
   listContainer: {
     flex: 1,
     padding: 15,
-    marginTop: -110,
-    marginLeft: -20,
-    marginRight: -20,
+    margin: -20,
+    top : -25,
   },
+  FlexContainerList : {
+    flexDirection: "column",
+  }
 });
 
 // Define the custom toast styles

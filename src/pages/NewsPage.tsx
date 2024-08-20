@@ -73,6 +73,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+    backgroundColor : Colors.Background_Color,
   },
   centered: {
     flex: 1,
@@ -82,7 +83,6 @@ const styles = StyleSheet.create({
   newsItem: {
     marginBottom: 16,
     padding: 16,
-    top : 10,
     borderRadius: 20,
     backgroundColor: Colors.Pale_Teal,
     shadowColor: '#000',

@@ -1,36 +1,83 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, Image, TouchableOpacity, Platform, ScrollView, KeyboardAvoidingView, TextInput } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, Platform, ScrollView, KeyboardAvoidingView, TextInput, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
+import EvilIcons from '@expo/vector-icons/EvilIcons';
 import { Feather } from '@expo/vector-icons';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
 
 const ProfileEditorPage: React.FC = () => {
   const [profilePhoto, setProfilePhoto] = useState<string>('https://media.licdn.com/dms/image/v2/D5603AQHdC0RAcIH2mA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1698160153100?e=2147483647&v=beta&t=2uYMCVYQBGMLnJLzO9Z7Xk0PSm1r7sPgdLW9OZB98XA');
-  const [username] = useState('JohnDoe'); 
+  const [username, setUsername] = useState('JohnDoe'); 
   const [name, setName] = useState('John Doe');
-  const [email, setEmail] = useState('johndoe@example.com');
+  const [email] = useState('johndoe@example.com');
   const [password, setPassword] = useState('********');
   const [isEditing, setIsEditing] = useState(false);
 
   const navigation = useNavigation();
 
-  const handleSave = () => {
-    Toast.show({
-      type: 'successToast',
-      text1: 'Profile Updated',
-      text2: 'Your profile has been updated successfully.',
-    });
-    setIsEditing(false);
+  useFocusEffect(
+    useCallback(() => {
+      const onBeforeRemove = (e: any) => {
+        if (isEditing) {
+          e.preventDefault();
+          Alert.alert(
+            'Discard changes?',
+            'You have unsaved changes. Are you sure you want to leave?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Discard', style: 'destructive', onPress: () => navigation.goBack() },
+            ]
+          );
+        }
+      };
+
+      navigation.addListener('beforeRemove', onBeforeRemove);
+
+      return () => {
+        navigation.removeListener('beforeRemove', onBeforeRemove);
+      };
+    }, [isEditing, navigation])
+  );
+
+  const handleSaveAndNavigate = () => {
+    if (isEditing) {
+      Alert.alert(
+        'Save changes?',
+        'You have unsaved changes. Please save them before leaving.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Save', onPress: () => {
+            setIsEditing(false);
+            Toast.show({
+              type: 'successToast',
+              text1: 'Profile Updated',
+              text2: 'Your profile has been updated successfully.',
+            });
+            setTimeout(() => {
+              navigation.goBack();
+            }, 2000);
+          }},
+        ]
+      );
+    } else {
+      Toast.show({
+        type: 'successToast',
+        text1: 'Profile Updated',
+        text2: 'Your profile has been updated successfully.',
+      });
+      setTimeout(() => {
+        navigation.goBack();
+      }, 2000);
+    }
   };
 
   const handleEditToggle = () => {
     Toast.show({
-      type: 'infoToast',
-      text1: 'Edit Mode',
-      text2: 'You have enabled edit mode.',
+      type: 'infoToast', 
+      text1: isEditing ? 'Edit Mode Disabled' : 'Edit Mode Enabled',
     });
     setIsEditing(!isEditing);
   };
@@ -59,10 +106,6 @@ const ProfileEditorPage: React.FC = () => {
     }
   };
 
-  const navigateToBalanceManager = () => {
-    navigation.navigate('BalanceManager' as never);  
-  };
-
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -71,21 +114,35 @@ const ProfileEditorPage: React.FC = () => {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
           <View style={styles.profilePhotoContainer}>
-            <Image source={{ uri: profilePhoto }} style={styles.profilePhoto} />
-            <TouchableOpacity style={styles.editIcon} onPress={pickImage}>
-              <Feather name="edit" size={24} color={Colors.Background_Color} />
+            <TouchableOpacity onPress={pickImage}>
+              <Image source={{ uri: profilePhoto }} style={styles.profilePhoto} />
+              <TouchableOpacity style={styles.editIcon} onPress={pickImage}>
+                <EvilIcons name="pencil" size={35} color={Colors.Background_Color} />
+              </TouchableOpacity>
             </TouchableOpacity>
           </View>
 
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Username</Text>
-            <Text style={styles.fixedText}>{username}</Text>
+            <TextInput
+              style={[
+                styles.input,
+                isEditing ? styles.editingInput : styles.defaultInput,
+              ]}
+              value={username}
+              onChangeText={setUsername}
+              editable={isEditing}
+              placeholder="Enter your Username"
+            />
           </View>
 
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Name</Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                isEditing ? styles.editingInput : styles.defaultInput,
+              ]}
               value={name}
               onChangeText={setName}
               editable={isEditing}
@@ -95,20 +152,16 @@ const ProfileEditorPage: React.FC = () => {
 
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              value={email}
-              onChangeText={setEmail}
-              editable={isEditing}
-              placeholder="Enter your email"
-              keyboardType="email-address"
-            />
+            <Text style={styles.fixedText}>{email}</Text>
           </View>
 
           <View style={styles.fieldContainer}>
             <Text style={styles.label}>Password</Text>
             <TextInput
-              style={styles.input}
+              style={[
+                styles.input,
+                isEditing ? styles.editingInput : styles.defaultInput,
+              ]}
               value={password}
               onChangeText={setPassword}
               editable={isEditing}
@@ -118,20 +171,18 @@ const ProfileEditorPage: React.FC = () => {
           </View>
 
           <View style={styles.buttonContainer}>
-              <TouchableOpacity style={styles.buttonSave} onPress={handleSave}>
-                <Text style={styles.buttonText}>Save</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.buttonEdit} onPress={handleEditToggle}>
-                <Text style={styles.buttonText}><Feather name="edit" size={25} color={Colors.Background_Color} /></Text>
-              </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonSave} onPress={handleSaveAndNavigate}>
+              <Text style={styles.buttonText}>Save</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.buttonEdit} onPress={handleEditToggle}>
+              <Text style={styles.buttonText}>
+                <Feather name="edit" size={25} color={Colors.Background_Color} />
+              </Text>
+            </TouchableOpacity>
           </View>
-
-          <TouchableOpacity style={styles.button} onPress={navigateToBalanceManager}>
-            <Text style={styles.buttonText}>Add Balance</Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
-      <Toast config={toastConfig as any} /> 
+      <Toast config={toastConfig as any} />
     </KeyboardAvoidingView>
   );
 };
@@ -224,10 +275,10 @@ const styles = StyleSheet.create({
   editIcon: {
     position: 'absolute',
     bottom: 0,
-    right: 0,
+    padding : 6,
+    left : 100,
     backgroundColor: Colors.Dark_Teal,
     borderRadius: 50,
-    padding: 10,
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -293,6 +344,14 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsSemiBold,
     fontSize: 20,
     color: Colors.Background_Color,
+  },
+  defaultInput: {
+    backgroundColor: Colors.Teal,
+    color: '#ffffff',
+  },
+  editingInput: {
+    backgroundColor: Colors.Pale_Teal,
+    color: 'darkgreen',
   },
 });
 

@@ -4,8 +4,8 @@ import { Colors } from '../utils/colors';
 import ExpensesList from '../components/ExpenseList';
 import { fonts } from '../utils/fonts';
 import Balance from '../components/Balance';
-import Profile from '../components/profile&Notification';
 import { getAllExpenses } from '../utils/Database/db';
+import { ScrollView } from 'react-native-virtualized-view';
 
 type Expense = {
   id: number;
@@ -26,7 +26,7 @@ const AllExpensesPage: React.FC = () => {
     if (isDataChanged) {
       try {
         const fetchedExpenses = await getAllExpenses();
-        setExpenses((prevExpenses) => [...prevExpenses, ...fetchedExpenses]);
+        setExpenses((Expenses) => [Expenses,fetchedExpenses]);
         isDataChanged = false; 
       } catch (error) {
         console.error('Error fetching all expenses:', error);
@@ -39,18 +39,17 @@ const AllExpensesPage: React.FC = () => {
   }, []);
 
   return (
+    <ScrollView >
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <Balance />
-      </View>
-      <View style={{ top: -66, left: 10 }}>
-        <Profile />
       </View>
       <View style={styles.ListContainer}>
         <Text style={styles.ListContainerText}>All Expenses</Text>
         <ExpensesList expenses={expenses} />
       </View>
     </View>
+    </ScrollView>
   );
 };
 
@@ -62,13 +61,9 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     borderRadius: 15,
     alignItems: 'center',
-    top: 10,
-    marginBottom: 20,
-    height: 100,
-    marginTop: 30,
   },
   ListContainerText: {
     fontSize: 23,
@@ -77,10 +72,9 @@ const styles = StyleSheet.create({
   },
   ListContainer: {
     flex: 1,
+    top: 20,
     padding: 15,
-    marginTop: -100,
-    marginLeft: -20,
-    marginRight: -20,
+    margin: -20,
   },
 });
 

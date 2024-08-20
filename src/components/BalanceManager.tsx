@@ -80,7 +80,7 @@ const BalanceManager: React.FC = () => {
             'You have unsaved changes. Are you sure you want to leave?',
             [
               { text: 'Cancel', style: 'cancel' },
-              { text: 'Discard', style: 'destructive', onPress: () => navigation.goBack() },
+              { text: 'Discard', style: 'destructive', onPress: () => navigation.navigate('Home') },
             ]
           );
         }
@@ -125,14 +125,17 @@ const BalanceManager: React.FC = () => {
         </View>
         <View style={styles.MainContainer}>
           <Text style={styles.AmountText}>Add Balance</Text>
+          <View style = {styles.subContainer}>
+          <Text style={styles.RupeesTxt}>₹</Text>
           <TextInput
             style={styles.AmountInput}
             value={amount}
             onChangeText={handleChangeAmountInput}
             keyboardType="numeric"
-            placeholder="₹ 0.00"
+            placeholder="0.00"
             placeholderTextColor={Colors.Text_Color}
           />
+          </View>
           <View style={styles.formContainer}>
             <TextInput
               style={styles.input}
@@ -194,6 +197,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderTopWidth: 0.1,
   },
+  subContainer  : {
+    flexDirection : 'row',
+    top : -10,
+    marginBottom : -15,
+  },
+  RupeesTxt : {
+    paddingHorizontal: 10,
+    fontSize: 50,
+    marginBottom: 30,
+    color: Colors.Text_Color,
+    fontFamily: fonts.PoppinsSemiBold,
+  },
   AmountText: {
     paddingHorizontal: 10,
     fontSize: 16,
@@ -201,12 +216,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsSemiBold,
   },
   balanceContainer: {
+    flex :1,
     marginBottom: 160,
+    left : -70,
+    top : 30,
     alignItems: 'center',
   },
   AmountInput: {
     fontFamily: fonts.PoppinsSemiBold,
     paddingHorizontal: 10,
+    left : -10,
     fontSize: 50,
     color: Colors.Background_Color,
     marginBottom: 30,
@@ -220,6 +239,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 10,
+    justifyContent : 'center',
   },
   input: {
     height: 60,
@@ -229,12 +249,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     fontSize: 16,
     color: Colors.Dark_Teal,
-    marginBottom: 20,
+    marginBottom: 10,
+    marginTop : 10,
   },
   addButton: {
     backgroundColor: Colors.Teal,
     padding: 20,
-    marginTop: 20,
+    marginTop: 30,
     borderRadius: 20,
     alignItems: 'center',
   },
