@@ -7,6 +7,8 @@ import EvilIcons from '@expo/vector-icons/EvilIcons';
 import { Feather } from '@expo/vector-icons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
+import { getAuth } from 'firebase/auth';
+import { signOut } from 'firebase/auth'; 
 
 const ProfileEditorPage: React.FC = () => {
   const [profilePhoto, setProfilePhoto] = useState<string>('https://media.licdn.com/dms/image/v2/D5603AQHdC0RAcIH2mA/profile-displayphoto-shrink_200_200/profile-displayphoto-shrink_200_200/0/1698160153100?e=2147483647&v=beta&t=2uYMCVYQBGMLnJLzO9Z7Xk0PSm1r7sPgdLW9OZB98XA');
@@ -17,7 +19,7 @@ const ProfileEditorPage: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
 
   const navigation = useNavigation();
-
+  const auth = getAuth(); 
   useFocusEffect(
     useCallback(() => {
       const onBeforeRemove = (e: any) => {
@@ -34,10 +36,10 @@ const ProfileEditorPage: React.FC = () => {
         }
       };
 
-      navigation.addListener('beforeRemove', onBeforeRemove);
+      const unsubscribe = navigation.addListener('beforeRemove', onBeforeRemove);
 
       return () => {
-        navigation.removeListener('beforeRemove', onBeforeRemove);
+        unsubscribe();
       };
     }, [isEditing, navigation])
   );
@@ -103,6 +105,24 @@ const ProfileEditorPage: React.FC = () => {
 
     if (!result.canceled) {
       setProfilePhoto(result.assets[0].uri);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      Toast.show({
+        type: 'infoToast',
+        text1: 'Logged Out',
+        text2: 'You have been logged out successfully.',
+      });
+      navigation.navigate(Login);
+    } catch (error) {
+      Toast.show({
+        type: 'errorToast',
+        text1: 'Logout Error',
+        text2: error.message,
+      });
     }
   };
 
@@ -180,6 +200,13 @@ const ProfileEditorPage: React.FC = () => {
               </Text>
             </TouchableOpacity>
           </View>
+
+          <TouchableOpacity style={styles.LogoutButtonContainer} onPress={handleLogout}>
+            <Text style={styles.LogoutText}>
+              <Feather name="log-out" size={25} color={Colors.Background_Color} style={styles.LogoutIcon} />
+              Logout
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
       <Toast config={toastConfig as any} />
@@ -209,6 +236,7 @@ const toastConfig = {
   ),
 };
 
+
 const customStyles = StyleSheet.create({
   successToast: {
     height: 60,
@@ -231,19 +259,19 @@ const customStyles = StyleSheet.create({
   infoToast: {
     height: 60,
     width: '90%',
-    backgroundColor: '#17a2b8', // Blue background for info
+    backgroundColor: '#17a2b8', 
     padding: 10,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   toastText: {
-    color: '#ffffff', // White text color
+    color: '#ffffff', 
     fontSize: 16,
     fontWeight: 'bold',
   },
   toastSubText: {
-    color: '#ffffff', // White text color for additional information
+    color: '#ffffff',
     fontSize: 14,
   },
   // Other styles...
@@ -359,6 +387,22 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Pale_Teal,
     color: 'darkgreen',
   },
+  LogoutButtonContainer : {
+    backgroundColor: Colors.Teal,
+    marginBottom: 20,
+    padding: 15,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent : 'space-evenly'
+  },
+  LogoutText : {
+    fontSize : 20,
+    fontFamily: fonts.PoppinsSemiBold,
+    color : Colors.Text_Color,
+    paddingLeft : 10,
+  },
+  LogoutIcon : {
+  }
 });
 
 export default ProfileEditorPage;

@@ -10,12 +10,11 @@ import {
   Platform,
 } from "react-native";
 import Toast from "react-native-toast-message";
-import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth"; // Correct Firebase imports
+import { signInWithEmailAndPassword } from "firebase/auth";
 import { Colors } from "../utils/colors";
 import { fonts } from "../utils/fonts";
-import HomePage from "./HomePage";
+import { auth } from "../utils/Auth/fireBaseConfig";
 
-const auth = getAuth(); // Initialize auth
 
 const Login = ({ navigation }) => {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
@@ -24,31 +23,34 @@ const Login = ({ navigation }) => {
   const handleLogin = async () => {
     Toast.hide(); // Clear previous toast messages
 
-    const errorToast = {};
+    const errorToast: { [key: string]: string } = {};
 
     if (!usernameOrEmail && !password) {
       Toast.show({
-        type: "errorToast",
+        type: "error",
         text1: "Input Required",
         text2: "Please fill in all input fields.",
       });
       return;
     }
 
-    if (!usernameOrEmail)
+    if (!usernameOrEmail) {
       errorToast.usernameOrEmail = "Username or Email is required";
-    if (!password) errorToast.password = "Password is required";
+    }
+    if (!password) {
+      errorToast.password = "Password is required";
+    }
 
     if (errorToast.usernameOrEmail) {
       Toast.show({
-        type: "errorToast",
+        type: "error",
         text1: "Validation Error",
         text2: errorToast.usernameOrEmail,
       });
     }
     if (errorToast.password) {
       Toast.show({
-        type: "errorToast",
+        type: "error",
         text1: "Validation Error",
         text2: errorToast.password,
       });
@@ -62,7 +64,7 @@ const Login = ({ navigation }) => {
     try {
       await signInWithEmailAndPassword(auth, usernameOrEmail, password);
       Toast.show({
-        type: "successToast",
+        type: "success",
         text1: "Success",
         text2: "Login successful!",
       });
@@ -72,31 +74,13 @@ const Login = ({ navigation }) => {
     } catch (error) {
       // Handle errors from Firebase Authentication
       Toast.show({
-        type: "errorToast",
+        type: "error",
         text1: "Login Error",
         text2: error.message,
       });
     }
   };
 
-  const handleLogout = () => {
-    signOut(auth)
-      .then(() => {
-        Toast.show({
-          type: "infoToast",
-          text1: "Logged Out",
-          text2: "You have been logged out successfully.",
-        });
-        navigation.navigate('Login'); 
-      })
-      .catch((error) => {
-        Toast.show({
-          type: "errorToast",
-          text1: "Logout Error",
-          text2: error.message,
-        });
-      });
-  };
 
   return (
     <KeyboardAvoidingView
