@@ -6,6 +6,14 @@ type Balance = { amount: number };
 
 let isDataChanged = false;
 
+const editExpense = async (updatedExpense: type.Expense) => {
+  const originalExpense = await getExpenseById(updatedExpense.id);
+
+  if (originalExpense) {
+    await saveExpense(updatedExpense, originalExpense.expenseAmount);
+  }
+};
+
 type Database = ReturnType<typeof SQLite.openDatabaseSync>;
 
 const openDatabase = async (): Promise<Database> => {
@@ -13,6 +21,9 @@ const openDatabase = async (): Promise<Database> => {
 };
 
 const dbPromise = openDatabase();
+
+
+
 
 export const initializeDatabase = async (): Promise<void> => {
   try {
@@ -50,17 +61,18 @@ export const initializeDatabase = async (): Promise<void> => {
       CREATE TABLE IF NOT EXISTS balance (
         id INTEGER PRIMARY KEY NOT NULL,
         amount REAL NOT NULL
-      );
-    `);
-
-    console.log('balance table created or already exists.');
-
-    // Initialize balance if not present
-    const result = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
-    if (!result) {
-      await db.runAsync('INSERT INTO balance (id, amount) VALUES (1, 0)');
+        );
+        `);
+        
+        console.log('balance table created or already exists.');
+        
+        // Initialize balance if not present
+        const result = await db.getFirstAsync('SELECT * FROM balance WHERE id = 1');
+        if (!result) {
+          await db.runAsync('INSERT INTO balance (id, amount) VALUES (1, 0)');
+          await updateExpense(updateExpense as any);
     }
-
+    
     console.log('Database initialized and tables created successfully.');
   } catch (error) {
     console.error('Error initializing database:', error);
@@ -71,25 +83,79 @@ export const initializeDatabase = async (): Promise<void> => {
 // Assuming you're using AsyncStorage or any other database
 
 
-export const saveBalance = async (newBalance: number, balanceEntry: { amount: number; name: string; category: string; bank: string; date?: string; }) => {
+// Function to Update Expense by ID
+export const updateExpense = async (expense: type.Expense): Promise<void> => {
   try {
-    // Save the updated balance
-    await AsyncStorage.setItem('balance', newBalance.toString());
+    const db = await dbPromise;
+    
+    await db.runAsync(
+      'UPDATE expenses SET category = ?, itemName = ?, date = ?, expenseAmount = ?, description = ?, image = ? WHERE id = ?',
+      expense.category ?? null,
+      expense.itemName ?? null,
+      expense.date ?? null,
+      expense.expenseAmount,
+      expense.description ?? null,
+      expense.image ?? null,
+      expense.id
+    );
 
-    // Retrieve existing balance history
-    const balanceHistory = await AsyncStorage.getItem('balanceHistory');
-    const parsedHistory = balanceHistory ? JSON.parse(balanceHistory) : [];
-
-    // Append the new balance entry to the history
-    parsedHistory.push(balanceEntry);
-
-    // Save the updated history back to storage
-    await AsyncStorage.setItem('balanceHistory', JSON.stringify(parsedHistory));
+    console.log('Expense updated successfully!');
   } catch (error) {
-    console.error('Failed to save balance:', error);
+    console.error('Error updating expense:', error);
+    throw error;
   }
 };
 
+
+
+export const saveExpense = async (expense: type.Expense, originalExpenseAmount?: number): Promise<void> => {
+  try {
+    const db = await dbPromise;
+
+    if (originalExpenseAmount !== undefined) {
+      // Update existing expense
+      await db.runAsync(
+        'UPDATE expenses SET category = ?, itemName = ?, date = ?, expenseAmount = ?, description = ?, image = ? WHERE id = ?',
+        expense.category ?? null,
+        expense.itemName ?? null,
+        expense.date ?? null,
+        expense.expenseAmount,
+        expense.description ?? null,
+        expense.image ?? null,
+        expense.id // Assuming the ID of the expense is passed in the expense object
+      );
+
+      // Adjust the balance based on the difference
+      const currentBalance = await getBalance();
+      const balanceDifference = originalExpenseAmount - expense.expenseAmount;
+      const newBalance = currentBalance + balanceDifference;
+
+      await saveBalance(newBalance, { amount: newBalance, name: '', category: '', bank: '' });
+    } else {
+      // Insert new expense
+      await db.runAsync(
+        'INSERT INTO expenses (category, itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?, ?)',
+        expense.category ?? null,
+        expense.itemName ?? null,
+        expense.date ?? null,
+        expense.expenseAmount,
+        expense.description ?? null,
+        expense.image ?? null
+      );
+
+      // Subtract the expense amount from the balance
+      const currentBalance = await getBalance();
+      const newBalance = currentBalance - expense.expenseAmount;
+
+      await saveBalance(newBalance, { amount: newBalance, name: '', category: '', bank: '' });
+    }
+
+    console.log('Expense saved!');
+  } catch (error) {
+    console.error('Error saving expense:', error);
+    throw error;
+  }
+};
 
 
 
@@ -117,34 +183,6 @@ export const getBalance = async () => {
   } catch (error) {
     console.error('Failed to fetch income:', error);
     return 0.0;
-  }
-};
-// Function to Save Expense
-export const saveExpense = async (expense: type.Expense): Promise<void> => {
-  try {
-    const db = await dbPromise;
-
-    await db.runAsync(
-      'INSERT INTO expenses (category, itemName, date, expenseAmount, description, image) VALUES (?, ?, ?, ?, ?, ?)',
-      expense.category ?? null,         
-      expense.itemName ?? null,
-      expense.date ?? null,
-      expense.expenseAmount,
-      expense.description ?? null,
-      expense.image ?? null
-    );
-
-    // Set change tracker to true
-    isDataChanged = true;
-
-    const currentBalance = await getBalance();
-    const newBalance = currentBalance - expense.expenseAmount;
-await saveBalance(newBalance, { amount: newBalance, name: '', category: '', bank: '' });
-
-    console.log('Expense saved!');
-  } catch (error) {
-    console.error('Error saving expense:', error);
-    throw error;
   }
 };
 
@@ -201,3 +239,7 @@ export const getIncome = async (): Promise<number> => {
     return 0;
   }
 };
+
+function saveBalance(newBalance: number, arg1: { amount: number; name: string; category: string; bank: string; }) {
+  throw new Error('Function not implemented.');
+}

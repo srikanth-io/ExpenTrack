@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { getBalance } from '../utils/Database/db'; 
 import EvilIcons from '@expo/vector-icons/EvilIcons';
@@ -35,14 +35,27 @@ const Balance: React.FC = () => {
     }
   }, [isBalanceUpdated]); 
 
+  useFocusEffect(
+    React.useCallback(() => {
+      // Re-fetch the balance when the screen is focused
+      const refreshBalance = async () => {
+        const updatedBalance = await getBalance();
+        setBalance(updatedBalance);
+      };
+
+      refreshBalance();
+    }, [])
+  );
+
   const navigateToBalanceManager = () => {
-    navigation.navigate('BalanceManager'); 
+    navigation.navigate('BalanceManager');
   };
+  
 
   return (
     <TouchableOpacity style={styles.balanceContainer} onPress={navigateToBalanceManager}>
       <TouchableOpacity onPress={navigateToBalanceManager}>
-      <View style = {styles.AmountContainer}>
+      <View style={styles.AmountContainer}>
         <Text style={styles.balanceText}>Amount Balance</Text>
         <Text style={styles.balanceTextAmount}>₹ {balance.toFixed(2)}</Text> 
         </View>

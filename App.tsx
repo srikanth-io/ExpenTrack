@@ -17,6 +17,9 @@ import Income from "./src/components/Income";
 import Expenses from "./src/components/Expenses";
 import EditExpense from "./src/components/EditExpense";
 import { StatusBar } from 'expo-status-bar';
+import Login from "./src/pages/LoginPage";
+import Register from "./src/pages/RegisterPage";
+import PasswordResetPage from "./src/pages/PasswordResetPage";
 
 const Stack = createStackNavigator();
 
@@ -68,6 +71,8 @@ export default function App() {
           ...TransitionPresets.SlideFromRightIOS,
         }}
       >
+        <Stack.Screen name="Login" component={Login} options={{headerShown : false}}/>
+        <Stack.Screen name="Registration" component={Register} options={{headerTitle : ' '}} />
         <Stack.Screen
           name="Dashboard"
           component={TabNavigator}
@@ -122,7 +127,9 @@ export default function App() {
             },
           }}
         />
+        
         <Stack.Screen name="Notification" component={Notification} />
+        <Stack.Screen name="PasswordResetPage" component={PasswordResetPage} options ={{headerTitle : ' ', }}/>
         <Stack.Screen name="IncomeList" component={Income} options={{headerTitle : 'Income Logs'}}/>
         <Stack.Screen name="ExpensesList" component={Expenses} options={{headerTitle : 'Expense Logs'}} />
         <Stack.Screen name="EditExpenses" component={EditExpense}  options={{headerTitle : 'Edit Transactions'}}/>

@@ -9,29 +9,34 @@ import {
   ScrollView,
   Platform,
 } from "react-native";
+import Toast from "react-native-toast-message";
+import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth"; // Correct Firebase imports
 import { Colors } from "../utils/colors";
 import { fonts } from "../utils/fonts";
-import Toast from "react-native-toast-message";
+import HomePage from "./HomePage";
+
+const auth = getAuth(); // Initialize auth
 
 const Login = ({ navigation }) => {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     Toast.hide(); // Clear previous toast messages
 
-    const errorToast: { usernameOrEmail?: string; password?: string } = {};
+    const errorToast = {};
 
     if (!usernameOrEmail && !password) {
       Toast.show({
-        type: "errorToast", 
+        type: "errorToast",
         text1: "Input Required",
         text2: "Please fill in all input fields.",
       });
       return;
     }
 
-    if (!usernameOrEmail) errorToast.usernameOrEmail = "Username or Email is required";
+    if (!usernameOrEmail)
+      errorToast.usernameOrEmail = "Username or Email is required";
     if (!password) errorToast.password = "Password is required";
 
     if (errorToast.usernameOrEmail) {
@@ -53,14 +58,44 @@ const Login = ({ navigation }) => {
       return;
     }
 
-    Toast.show({
-      type: "successToast",
-      text1: "Success",
-      text2: "Login successful!",
-    });
+    // Firebase Authentication: Attempt to sign in the user
+    try {
+      await signInWithEmailAndPassword(auth, usernameOrEmail, password);
+      Toast.show({
+        type: "successToast",
+        text1: "Success",
+        text2: "Login successful!",
+      });
 
-    // Navigate to another screen after successful login
-    // navigation.navigate('Home'); // or any other screen
+      // Navigate to the Home screen after successful login
+      navigation.navigate('Dashboard');
+    } catch (error) {
+      // Handle errors from Firebase Authentication
+      Toast.show({
+        type: "errorToast",
+        text1: "Login Error",
+        text2: error.message,
+      });
+    }
+  };
+
+  const handleLogout = () => {
+    signOut(auth)
+      .then(() => {
+        Toast.show({
+          type: "infoToast",
+          text1: "Logged Out",
+          text2: "You have been logged out successfully.",
+        });
+        navigation.navigate('Login'); 
+      })
+      .catch((error) => {
+        Toast.show({
+          type: "errorToast",
+          text1: "Logout Error",
+          text2: error.message,
+        });
+      });
   };
 
   return (
@@ -94,6 +129,13 @@ const Login = ({ navigation }) => {
             secureTextEntry
           />
         </View>
+
+        <TouchableOpacity
+          style={styles.forgetPasswordContainer}
+          onPress={() => navigation.navigate("PasswordResetPage")}
+        >
+          <Text style={styles.forgetPasswordText}>Forget Password ? </Text>
+        </TouchableOpacity>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity style={styles.button} onPress={handleLogin}>
@@ -156,19 +198,19 @@ const customStyles = StyleSheet.create({
   infoToast: {
     height: 60,
     width: "90%",
-    backgroundColor: "#17a2b8", // Blue background for info
+    backgroundColor: "#17a2b8",
     padding: 10,
     borderRadius: 20,
     justifyContent: "center",
     alignItems: "center",
   },
   toastText: {
-    color: "#ffffff", // White text color
+    color: "#ffffff",
     fontSize: 16,
     fontWeight: "bold",
   },
   toastSubText: {
-    color: "#ffffff", // White text color for additional information
+    color: "#ffffff",
     fontSize: 14,
   },
 });
@@ -206,6 +248,15 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsBold,
     color: Colors.Dark_Teal,
   },
+  forgetPasswordContainer: {
+    right: 5,
+    alignItems: "flex-end",
+  },
+  forgetPasswordText: {
+    fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Teal,
+  },
   fieldContainer: {
     marginBottom: 20,
   },
@@ -238,7 +289,7 @@ const styles = StyleSheet.create({
     marginTop: 50,
   },
   registerText: {
-    fontFamily: fonts.PoppinsSemiBold,
+    fontFamily: fonts.PoppinsMedium,
     fontSize: 16,
     color: Colors.Dark_Teal,
   },

@@ -15,6 +15,8 @@ import { fonts } from '../utils/fonts';
 import Toast from 'react-native-toast-message';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/types';
+import { auth } from '../utils/Auth/fireBaseConfig';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 type RegisterScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
@@ -41,9 +43,8 @@ const Register: React.FC<Props> = ({ navigation }) => {
     termsAccepted?: string | null;
   }>({});
 
-  const handleRegister = () => {
+  const handleRegister = async () => {
     Toast.hide(); // Clear previous toast messages
-
 
     const errorToast: {
       username?: string;
@@ -54,19 +55,19 @@ const Register: React.FC<Props> = ({ navigation }) => {
     } = {};
 
     if (!username && !name && !email && !password && !termsAccepted) {
-        Toast.show({
-          type: "errorToast", 
-          text1: "Input Required",
-          text2: "Please fill in all input fields.",
-        });
-        return;
-      }
-  
-      if (!username) errorToast.username = "Username is required";
-      if (!name) errorToast.name = "Name is required";
-      if (!email) errorToast.email = "Email is required";
-      if (!password) errorToast.password = "Password is required";
-      if (!termsAccepted) errorToast.termsAccepted = "Terms must accepted";
+      Toast.show({
+        type: "errorToast", 
+        text1: "Input Required",
+        text2: "Please fill in all input fields.",
+      });
+      return;
+    }
+
+    if (!username) errorToast.username = "Username is required";
+    if (!name) errorToast.name = "Name is required";
+    if (!email) errorToast.email = "Email is required";
+    if (!password) errorToast.password = "Password is required";
+    if (!termsAccepted) errorToast.termsAccepted = "Terms must be accepted";
 
     // Show individual toast messages
     if (errorToast.username) {
@@ -111,16 +112,40 @@ const Register: React.FC<Props> = ({ navigation }) => {
       return;
     }
 
-    // If no errors, proceed with registration logic
-    Toast.show({
-      type: 'successToast',
-      text1: 'Success',
-      text2: 'Registration successful!',
-    });
+    try {
+      // Register the user with Firebase Authentication
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-    navigation.navigate('Login');
+      // Update the user profile with the username
+      await updateProfile(userCredential.user, {
+        displayName: username,
+      });
+
+      Toast.show({
+        type: 'successToast',
+        text1: 'Success',
+        text2: 'Registration successful!',
+      });
+
+      navigation.navigate('Login'); 
+    } catch (error) {
+      let errorMessage = 'Registration failed';
+
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = 'Email already in use';
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = 'Invalid email';
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = 'Password is too weak';
+      }
+
+      Toast.show({
+        type: 'errorToast',
+        text1: 'Registration Error',
+        text2: errorMessage,
+      });
+    }
   };
-
 
   return (
     <KeyboardAvoidingView
@@ -128,16 +153,15 @@ const Register: React.FC<Props> = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-      
         <View style={styles.formContainer}>
-        <View style={styles.RegisterTextHead}>
-          <Text style={styles.RegisterText}>Let's get</Text>
-          <Text style={styles.RegisterTextTwo}>Started</Text>
-        </View>
+          <View style={styles.RegisterTextHead}>
+            <Text style={styles.RegisterText}>Let's get</Text>
+            <Text style={styles.RegisterTextTwo}>Started</Text>
+          </View>
 
           <View style={styles.fieldContainer}>
             <TextInput
-              style={[styles.input, errors.username && styles.errorInput]}
+              style={styles.input }
               value={username}
               onChangeText={(text) => {
                 setUsername(text);
@@ -150,7 +174,7 @@ const Register: React.FC<Props> = ({ navigation }) => {
 
           <View style={styles.fieldContainer}>
             <TextInput
-              style={[styles.input, errors.name && styles.errorInput]}
+              style={styles.input}
               value={name}
               onChangeText={(text) => {
                 setName(text);
@@ -162,7 +186,7 @@ const Register: React.FC<Props> = ({ navigation }) => {
 
           <View style={styles.fieldContainer}>
             <TextInput
-              style={[styles.input, errors.email && styles.errorInput]}
+              style={styles.input}
               value={email}
               onChangeText={(text) => {
                 setEmail(text);
@@ -175,7 +199,7 @@ const Register: React.FC<Props> = ({ navigation }) => {
 
           <View style={styles.fieldContainer}>
             <TextInput
-              style={[styles.input, errors.password && styles.errorInput]}
+              style={styles.input}
               value={password}
               onChangeText={(text) => {
                 setPassword(text);
@@ -197,7 +221,7 @@ const Register: React.FC<Props> = ({ navigation }) => {
                 setErrors((prev) => ({ ...prev, termsAccepted: null }));
               }}
               thumbColor={termsAccepted ? Colors.Teal : Colors.Pale_Teal}
-              trackColor={{ false: Colors.Light_Teal, true: Colors.Teal }}
+              trackColor={{ false: Colors.Light_Teal, true: Colors.Dark_Teal }}
             />
           </View>
 
@@ -264,20 +288,21 @@ const customStyles = StyleSheet.create({
   infoToast: {
     height: 60,
     width: '90%',
-    backgroundColor: '#17a2b8', 
+    backgroundColor: Colors.Light_Red,
     padding: 10,
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
   },
   toastText: {
-    color: Colors.Text_Color, 
+    color: Colors.Dark_Teal,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontFamily: fonts.PoppinsMedium,
   },
   toastSubText: {
-    color: Colors.Text_Color, 
+    color: Colors.Dark_Green,
     fontSize: 14,
+    fontFamily: fonts.PoppinsRegular,
   },
 });
 
@@ -364,7 +389,7 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontSize: 16,
-    fontFamily : fonts.PoppinsSemiBold,
+    fontFamily : fonts.PoppinsMedium,
     color: Colors.Dark_Teal,
     marginRight: 5,
   },

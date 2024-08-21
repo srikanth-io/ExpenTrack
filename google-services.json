@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1017015544471",
+    "project_id": "expen-track",
+    "storage_bucket": "expen-track.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1017015544471:android:041085c9e87fdb72a4d7d2",
+        "android_client_info": {
+          "package_name": "com.expentrack.au"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA3mFXWUYpxwjzaY69I_NK5m3Ik9wEuk4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
