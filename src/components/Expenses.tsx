@@ -1,94 +1,107 @@
-// components/Expenses.js
-
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
-import { Colors } from '../utils/colors';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { getAllExpenses } from '../utils/Database/db'; 
-import { Expense } from './EditExpense';
 import { type } from '../utils/types';
+import CategoryIcon from '../components/categoriesIcon'; 
+import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
+import { useNavigation } from '@react-navigation/native';
+import EditExpense from './EditExpense';
 
-const Expenses = () => {
-  const [expenses, setExpenses] = useState([]);
+const ExpensesList = () => {
+  const [expenses, setExpenses] = useState<type.Expense[]>([]);
+  const navigation = useNavigation();
 
   useEffect(() => {
-    const fetchExpenses = async () => {
+    const fetchData = async () => {
       try {
-        const expensesData = await getAllExpenses();
-setExpenses(prevExpenses => [...prevExpenses, ...expensesData]);
+        const allExpenses = await getAllExpenses();
+        setExpenses(allExpenses);
       } catch (error) {
         console.error('Error fetching expenses:', error);
       }
     };
 
-    fetchExpenses();
+    fetchData();
   }, []);
 
 
+  const handlePress = (expense: type.Expense) => {
+    navigation.navigate(EditExpense, { expense });
+  };
+
   const renderItem = ({ item }: { item: type.Expense }) => (
-    <View style={styles.itemContainer}>
-      <TouchableOpacity style={styles.textContainer}>
-        <Text style={styles.itemHead}>{item.itemName}</Text>
-        <Text style={styles.itemDescription}>{item.date}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.containerAmount}>
-        <Text style={styles.itemTextAmount}>${item.expenseAmount.toFixed(2)}</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity style={styles.itemContainer} onPress={() => handlePress(item)}>
+      <View style={styles.amountContainer}>
+        <CategoryIcon 
+          category={item.category} amount={0} isExpense={false}        />
+      </View>
+
+      <View style={styles.textContainer}>
+        <Text style={styles.itemTextHead}>{item.itemName}</Text>
+        <Text style={styles.itemText}>{item.date}</Text>
+      </View>
+      
+      <View style={styles.containerAmount}>
+        <Text style={styles.itemTextAmount}>₹ {item.expenseAmount.toFixed(2)}</Text>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={expenses}
-        renderItem={renderItem}
-keyExtractor={(item: Expense) => item.id?.toString() ?? '0'}
-      />
-    </View>
+    <FlatList
+      data={expenses}
+      renderItem={renderItem}
+      keyExtractor={(item) => item.id.toString()}
+      ListEmptyComponent={<Text style={styles.emptyText}>No expenses available.</Text>}
+    />
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.Background_Color,
-    padding: 20,
+  itemContainer: {
+    backgroundColor: Colors.Light_Red, 
+    padding: 15,
+    top : 15,
+    marginVertical: 5,
+    borderRadius: 20, 
+    flexDirection: 'row', 
+    margin :15,
   },
   textContainer: {
-    padding: 20,
-    backgroundColor: Colors.Light_Red,
-    marginBottom: 10,
-    justifyContent : 'center',
-    borderRadius: 10,
+    paddingLeft: 10,
+    justifyContent: 'center',
   },
-  itemHead: {
-    fontSize: 20,
-    color: Colors.Red,
+  itemTextHead: {
+    fontSize: 23,
     fontFamily : fonts.PoppinsSemiBold,
-},
-itemDescription: {
+    color: Colors.Red,
+  },
+  itemText: {
     fontSize: 16,
     fontFamily : fonts.PoppinsSemiBold,
-    color: Colors.Red,
+    color: Colors.Dark_Green, 
   },
-  itemAmount: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: Colors.Red,
+  amountContainer: {
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontFamily : fonts.PoppinsSemiBold,
+    textAlign: 'center',
+    color: Colors.Text_Color,
   },
   containerAmount : {
     flex : 1,
     alignItems : 'flex-end',
     right: 0,
     width : '90%',
-    top : 20,
     justifyContent: 'center',
   },
   itemTextAmount : {
-    fontSize : 30,
-    color : Colors.Text_Color,
-
+    fontSize : 23,
+    fontFamily : fonts.PoppinsSemiBold,
+    color : Colors.Red,
   }
 });
 
-export default Expenses;
+export default ExpensesList;

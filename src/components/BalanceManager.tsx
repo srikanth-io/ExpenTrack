@@ -97,19 +97,14 @@ const BalanceManager: React.FC = () => {
           <View style={styles.subContainer}>
             <Text style={styles.RupeesTxt}>₹</Text>
             <TextInput
-            style={styles.AmountInput} 
+            style={styles.AmountText} 
+            value={amount}
+             keyboardType="numeric"
+             onChangeText={setAmount}
             placeholder="0.0"/>
           </View>
-        </View>
+
         <View style={styles.formContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Amount"
-            value={amount}
-            onChangeText={setAmount}
-            keyboardType="numeric"
-            placeholderTextColor={Colors.Dark_Teal}
-          />
           <TextInput
             style={styles.input}
             placeholder="Name"
@@ -135,6 +130,7 @@ const BalanceManager: React.FC = () => {
             <Text style={styles.addButtonText}>Add Balance</Text>
           </TouchableOpacity>
         </View>
+        </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -147,28 +143,27 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     paddingHorizontal: 20,
-    padding: 0,
   },
   MainContainer: {
+    flex :1,
+    marginTop : 163.5,
     backgroundColor: Colors.Light_Teal,
-    paddingTop: 40,
-    paddingBottom: 65,
     padding: 20,
     marginHorizontal: -20,
     borderRadius: 20,
-    borderTopWidth: 0.1,
+    paddingBottom : 30,
   },
   AddBalanceText : {
     fontSize : 16,
+    paddingHorizontal : 10,
     fontFamily : fonts.PoppinsSemiBold,
     color : Colors.Background_Color,
   },
   subContainer  : {
-    position: 'absolute',
     flexDirection : 'row',
+    flex : 1,
+    height : 'auto',
     top : -10,
-    marginBottom : -15,
-    height : 200,
   },
   RupeesTxt : {
     paddingHorizontal: 10,
@@ -179,17 +174,11 @@ const styles = StyleSheet.create({
   },
   AmountText: {
     paddingHorizontal: 10,
+    left : -15,
     fontSize: 50,
     marginBottom: 30,
     color: Colors.Text_Color,
     fontFamily: fonts.PoppinsSemiBold,
-  },
-  balanceContainer: {
-    flex :1,
-    marginBottom: 160,
-    left : -70,
-    top : 30,
-    alignItems: 'center',
   },
   AmountInput: {
     fontFamily: fonts.PoppinsSemiBold,

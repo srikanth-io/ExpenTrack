@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,13 +9,14 @@ import {
   Platform,
   StyleSheet,
   KeyboardAvoidingView,
-  ScrollView
-} from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { Colors } from '../utils/colors';
-import { fonts } from '../utils/fonts';
-import { updateExpense, getBalance } from '../utils/Database/db'; 
+  ScrollView,
+} from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Colors } from "../utils/colors";
+import { fonts } from "../utils/fonts";
+import { updateExpense, getBalance } from "../utils/Database/db";
+import Balance from "./Balance";
 
 export interface Expense {
   category: string;
@@ -33,29 +34,37 @@ interface EditExpenseProps {
       expense: Expense;
     };
   };
-  navigation: any; 
+  navigation: any;
 }
 
 const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
   const { expense } = route.params;
-  
-  const [itemName, setItemName] = useState<string>(expense.itemName || '');
+
+  const [itemName, setItemName] = useState<string>(expense.itemName || "");
   const [date, setDate] = useState<Date>(new Date(expense.date || Date.now()));
-  const [formattedDate, setFormattedDate] = useState<string>(expense.date || new Date().toLocaleDateString());
-  const [expenseAmount, setExpenseAmount] = useState<string>(expense.expenseAmount.toString() || ''); 
-  const [description, setDescription] = useState<string>(expense.description || '');
-  const [image, setImage] = useState<{ uri: string } | null>(expense.image ? { uri: expense.image } : null);
+  const [formattedDate, setFormattedDate] = useState<string>(
+    expense.date || new Date().toLocaleDateString()
+  );
+  const [expenseAmount, setExpenseAmount] = useState<string>(
+    expense.expenseAmount.toString() || ""
+  );
+  const [description, setDescription] = useState<string>(
+    expense.description || ""
+  );
+  const [image, setImage] = useState<{ uri: string } | null>(
+    expense.image ? { uri: expense.image } : null
+  );
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const [balance, setBalance] = useState<number>(0);
-  
+
   useEffect(() => {
     const fetchBalance = async () => {
       try {
         const currentBalance = await getBalance();
         setBalance(currentBalance || 0);
       } catch (error) {
-        console.error('Error fetching balance:', error);
-        Alert.alert('Error', 'Failed to fetch balance.');
+        console.error("Error fetching balance:", error);
+        Alert.alert("Error", "Failed to fetch balance.");
       }
     };
 
@@ -72,11 +81,11 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
       });
 
       if (!result.canceled && result.assets?.[0]) {
-        setImage(result.assets[0]); 
+        setImage(result.assets[0]);
       }
     } catch (error) {
-      console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to pick image.');
+      console.error("Error picking image:", error);
+      Alert.alert("Error", "Failed to pick image.");
     }
   };
 
@@ -84,12 +93,12 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
     const updatedExpenseAmount = parseFloat(expenseAmount);
 
     if (isNaN(updatedExpenseAmount) || updatedExpenseAmount <= 0) {
-      Alert.alert('Validation Error', 'Expense amount must be greater than 0.');
+      Alert.alert("Validation Error", "Expense amount must be greater than 0.");
       return;
     }
 
     if (updatedExpenseAmount > balance) {
-      Alert.alert('Limit Exceeded', 'Insufficient balance.');
+      Alert.alert("Limit Exceeded", "Insufficient balance.");
       return;
     }
 
@@ -97,24 +106,24 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
       id: expense.id,
       itemName,
       date: formattedDate,
-      expenseAmount: updatedExpenseAmount, 
+      expenseAmount: updatedExpenseAmount,
       description,
-      image: image?.uri || null,
+      image: image?.uri || undefined,
     };
 
     try {
       await updateExpense(updatedExpense);
-      Alert.alert('Success', 'Expense updated successfully!');
+      Alert.alert("Success", "Expense updated successfully!");
       navigation.goBack();
     } catch (error) {
-      console.error('Error updating expense:', error);
-      Alert.alert('Error', 'Failed to update expense.');
+      console.error("Error updating expense:", error);
+      Alert.alert("Error", "Failed to update expense.");
     }
   };
 
-  const onChangeDate = (event: any, selectedDate?: Date) => { 
+  const onChangeDate = (event: any, selectedDate?: Date) => {
     const currentDate = selectedDate || date;
-    setShowDatePicker(Platform.OS === 'ios');
+    setShowDatePicker(Platform.OS === "ios");
     setDate(currentDate);
     setFormattedDate(currentDate.toLocaleDateString());
   };
@@ -122,63 +131,74 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={100}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
-          <Text style={styles.label}>Item Name:</Text>
+          <Balance/>
           <TextInput
             style={styles.input}
             value={itemName}
             onChangeText={setItemName}
+            placeholder="Item Name"
           />
           <View style={styles.space} />
 
-          <Text style={styles.label}>Date:</Text>
-          <TouchableOpacity style={styles.datePickerButton} onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.datePickerText}>{formattedDate || 'Select Date'}</Text>
+          <TouchableOpacity
+            style={styles.datePickerButton}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Text style={styles.datePickerText}>
+              {formattedDate || "Select Date"}
+            </Text>
           </TouchableOpacity>
           {showDatePicker && (
             <DateTimePicker
               value={date}
-              mode='date'
-              display='default'
+              mode="date"
+              display="default"
               onChange={onChangeDate}
             />
           )}
           <View style={styles.space} />
 
-          <Text style={styles.label}>Expense Amount:</Text>
           <TextInput
             style={styles.input}
             value={expenseAmount}
-            onChangeText={text => setExpenseAmount(text.replace(/[^0-9.]/g, ''))} 
-            keyboardType='number-pad'
-            placeholder='₹ 0.0'
+            onChangeText={(text) =>
+              setExpenseAmount(text.replace(/[^0-9.]/g, ""))
+            }
+            keyboardType="number-pad"
+            placeholder="₹ 0.0"
           />
           <View style={styles.space} />
 
-          <Text style={styles.label}>Description:</Text>
           <TextInput
             style={styles.inputDes}
             value={description}
             onChangeText={setDescription}
+            placeholder="Description"
             multiline={true}
           />
-          <View style={styles.space} />
 
-          <TouchableOpacity style={styles.ButtonContainer}>
-            <TouchableOpacity style={styles.imagePicker} onPress={handleImagePick}>
-              <Text style={styles.imagePickerText}>Add Picture</Text>
-              {image && (
-                <Image source={{ uri: image.uri }} style={styles.image} />
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save</Text>
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.imagePickerButton}
+            onPress={handleImagePick}
+          >
+            <Text style={styles.imagePickerText}>Add Picture</Text>
+            {image && <Image source={{ uri: image.uri }} style={styles.selectedImage} />}
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.buttonContainer}
+            onPress={handleSave}
+          >
+            <View style={styles.button}>
+              <Text style={styles.buttonText}>Save</Text>
+            </View>
+          </TouchableOpacity>
+          <View style={styles.space} />
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -188,107 +208,87 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: Colors.Background_Color,
   },
   scrollContainer: {
     flexGrow: 1,
-    padding: 20,
-  },
-  balancePreview: {
-    position: 'absolute',
-    top: 20,
-    right: 20,
-    backgroundColor: Colors.Teal,
-    padding: 15,
-    borderRadius: 15,
-  },
-  balanceText: {
-    color: Colors.Text_Color,
-    fontFamily: fonts.PoppinsRegular,
-    fontWeight: 'bold',
-    fontSize: 18,
+    justifyContent: "center",
+    paddingHorizontal: 20,
   },
   formContainer: {
-    flex :1,
-    marginTop: 70, 
-  },
-  label: {
-    fontFamily: fonts.PoppinsRegular,
-    fontWeight: 'bold',
-    fontSize: 18,
-    marginBottom: 5,
-  },
-  input: {
-    height: 60,
-    backgroundColor: Colors.Pale_Teal,
-    marginBottom: 10,
-    padding: 10,
-    borderRadius: 20,
-    fontSize: 18,
-  },
-  inputDes: {
-    height: 150,
-    textAlignVertical: 'top', 
-    backgroundColor: Colors.Pale_Teal,
-    marginBottom: 10,
-    padding: 10,
-    borderRadius: 20,
-    fontSize: 18,
+    flex: 1,
+    top : -40,
+    justifyContent: "center",
   },
   space: {
     height: 15,
   },
-  datePickerButton: {
-    borderColor: Colors.Teal,
-    borderWidth: 2,
-    padding: 10,
+  input: {
+    height: 60,
+    backgroundColor: Colors.Pale_Teal,
+    paddingHorizontal : 15,
     borderRadius: 15,
-    marginBottom: 10,
+    fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Teal,
+  },
+  inputDes: {
+    height: 150,
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 15,
+    paddingHorizontal : 15,
+    paddingTop: 15,
+    fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Teal,
+    textAlignVertical: "top",
+    padding: 10,
+    marginBottom : 15,
+  },
+  datePickerButton: {
+    height : 60,
+    backgroundColor: Colors.Pale_Teal,
+    justifyContent : 'center',
+    paddingHorizontal: 15,
+    borderRadius: 15,
   },
   datePickerText: {
-    fontFamily: fonts.PoppinsRegular,
-    fontSize: 18,
+    fontFamily: fonts.PoppinsSemiBold,
+    fontSize: 16,
+    color: Colors.Dark_Teal,
   },
-  ButtonContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-    marginTop: 10,
-  },
-  imagePicker: {
-    backgroundColor: Colors.Teal,
-    padding: 10,
-    height: 50,
-    width: 150,
+  imagePickerButton: {
+    backgroundColor: Colors.Light_Teal,
+    padding: 40,
+    justifyContent : 'center',
     borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
   },
   imagePickerText: {
-    color: Colors.Text_Color,
-    fontFamily: fonts.PoppinsRegular,
-    fontWeight: 'bold',
+    fontFamily: fonts.PoppinsSemiBold,
     fontSize: 18,
+    color: Colors.Dark_Teal,
   },
-  image: {
+  selectedImage: {
     width: 100,
     height: 100,
-    resizeMode: 'cover',
-    marginBottom: 10,
+    marginTop: 10,
+    borderRadius: 10,
   },
-  saveButton: {
+  buttonContainer: {
+    marginTop: 20,
+  },
+  button: {
+    height : 60,
     backgroundColor: Colors.Teal,
-    padding: 10,
-    height: 50,
-    width: 200,
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
+    padding: 15,
+    borderRadius: 20,
+    alignItems: "center",
   },
-  saveButtonText: {
-    color: Colors.Text_Color,
-    fontFamily: fonts.PoppinsRegular,
-    fontWeight: 'bold',
-    fontSize: 18,
+  buttonText: {
+    fontFamily: fonts.PoppinsSemiBold,
+    fontSize: 20,
+    color: Colors.Background_Color,
   },
 });
 

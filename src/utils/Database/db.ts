@@ -70,6 +70,7 @@ export const initializeDatabase = async (): Promise<void> => {
 // Function to Save Balance
 // Assuming you're using AsyncStorage or any other database
 
+
 export const saveBalance = async (newBalance: number, balanceEntry: { amount: number; name: string; category: string; bank: string; date?: string; }) => {
   try {
     // Save the updated balance
@@ -89,15 +90,6 @@ export const saveBalance = async (newBalance: number, balanceEntry: { amount: nu
   }
 };
 
-// export const getBalanceHistory = async () => {
-//   try {
-//     const balanceHistory = await AsyncStorage.getItem('balanceHistory');
-//     return balanceHistory ? JSON.parse(balanceHistory) : [];
-//   } catch (error) {
-//     console.error('Failed to fetch balance history:', error);
-//     return [];
-//   
-// };
 
 
 
@@ -111,7 +103,7 @@ export const getBalanceHistory = async (): Promise<any[]> => {
     return data;
   } catch (error) {
     console.error('Error fetching balance history:', error);
-    return []; // Return an empty array in case of error
+    return []; 
   }
 };
 
