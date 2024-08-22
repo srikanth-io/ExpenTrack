@@ -102,6 +102,7 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
       return;
     }
 
+    
     const updatedExpense: Expense = {
       id: expense.id,
       itemName,
@@ -109,6 +110,7 @@ const EditExpense: React.FC<EditExpenseProps> = ({ route, navigation }) => {
       expenseAmount: updatedExpenseAmount,
       description,
       image: image?.uri || undefined,
+      category: ""
     };
 
     try {
