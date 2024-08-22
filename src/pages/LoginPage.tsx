@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  StyleSheet,
   Text,
   View,
   TextInput,
@@ -8,23 +7,33 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Platform,
+  StyleSheet,
 } from "react-native";
-import Toast from "react-native-toast-message";
+import Toast, { ToastConfig } from "react-native-toast-message";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { StackNavigationProp } from '@react-navigation/stack';
+import { auth } from "../utils/Auth/fireBaseConfig";
 import { Colors } from "../utils/colors";
 import { fonts } from "../utils/fonts";
-import { auth } from "../utils/Auth/fireBaseConfig";
 
+type RootStackParamList = {
+  Dashboard: undefined;
+  PasswordResetPage: undefined;
+  Registration: undefined;
+};
 
-const Login = ({ navigation }) => {
+type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList>;
+
+const Login = ({ navigation }: { navigation: LoginScreenNavigationProp }) => {
   const [usernameOrEmail, setUsernameOrEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
-    Toast.hide(); // Clear previous toast messages
+    Toast.hide();
 
     const errorToast: { [key: string]: string } = {};
 
+    // Input validation
     if (!usernameOrEmail && !password) {
       Toast.show({
         type: "error",
@@ -41,6 +50,7 @@ const Login = ({ navigation }) => {
       errorToast.password = "Password is required";
     }
 
+    // Show validation errors
     if (errorToast.usernameOrEmail) {
       Toast.show({
         type: "error",
@@ -60,7 +70,7 @@ const Login = ({ navigation }) => {
       return;
     }
 
-    // Firebase Authentication: Attempt to sign in the user
+    // Attempt to sign in
     try {
       await signInWithEmailAndPassword(auth, usernameOrEmail, password);
       Toast.show({
@@ -68,19 +78,76 @@ const Login = ({ navigation }) => {
         text1: "Success",
         text2: "Login successful!",
       });
-
-      // Navigate to the Home screen after successful login
       navigation.navigate('Dashboard');
-    } catch (error) {
-      // Handle errors from Firebase Authentication
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       Toast.show({
         type: "error",
         text1: "Login Error",
-        text2: error.message,
+        text2: errorMessage,
       });
     }
   };
 
+  const toastConfig: ToastConfig = {
+    success: ({ text1, text2 }) => (
+      <View style={customStyles.successToast}>
+        <Text style={customStyles.toastText}>{text1}</Text>
+        <Text style={customStyles.toastSubText}>{text2}</Text>
+      </View>
+    ),
+    error: ({ text1, text2 }) => (
+      <View style={customStyles.errorToast}>
+        <Text style={customStyles.toastText}>{text1}</Text>
+        <Text style={customStyles.toastSubText}>{text2}</Text>
+      </View>
+    ),
+    info: ({ text1, text2 }) => (
+      <View style={customStyles.infoToast}>
+        <Text style={customStyles.toastText}>{text1}</Text>
+        <Text style={customStyles.toastSubText}>{text2}</Text>
+      </View>
+    ),
+  };
+
+  const customStyles = StyleSheet.create({
+    successToast: {
+      height: 60,
+      width: "90%",
+      backgroundColor: Colors.Light_Teal,
+      padding: 10,
+      borderRadius: 20, 
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    errorToast: {
+      height: 60,
+      width: "90%",
+      backgroundColor: Colors.Red,
+      padding: 10,
+      borderRadius: 20, 
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    infoToast: {
+      height: 60,
+      width: "90%",
+      backgroundColor: "#17a2b8",
+      padding: 10,
+      borderRadius: 20, 
+      justifyContent: "center",
+      alignItems: "center",
+    },
+    toastText: {
+      color: "#ffffff",
+      fontSize: 16,
+      fontWeight: "bold",
+    },
+    toastSubText: {
+      color: "#ffffff",
+      fontSize: 14,
+    },
+  });
 
   return (
     <KeyboardAvoidingView
@@ -101,6 +168,7 @@ const Login = ({ navigation }) => {
             onChangeText={setUsernameOrEmail}
             placeholder="Username or Email Address"
             keyboardType="email-address"
+            autoCapitalize="none" 
           />
         </View>
 
@@ -118,7 +186,7 @@ const Login = ({ navigation }) => {
           style={styles.forgetPasswordContainer}
           onPress={() => navigation.navigate("PasswordResetPage")}
         >
-          <Text style={styles.forgetPasswordText}>Forget Password ? </Text>
+          <Text style={styles.forgetPasswordText}>Forget Password?</Text>
         </TouchableOpacity>
 
         <View style={styles.buttonContainer}>
@@ -139,65 +207,8 @@ const Login = ({ navigation }) => {
   );
 };
 
-const toastConfig = {
-  successToast: ({ text1, text2 }) => (
-    <View style={customStyles.successToast}>
-      <Text style={customStyles.toastText}>{text1}</Text>
-      {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
-    </View>
-  ),
-  errorToast: ({ text1, text2 }) => (
-    <View style={customStyles.errorToast}>
-      <Text style={customStyles.toastText}>{text1}</Text>
-      {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
-    </View>
-  ),
-  infoToast: ({ text1, text2 }) => (
-    <View style={customStyles.infoToast}>
-      <Text style={customStyles.toastText}>{text1}</Text>
-      {text2 && <Text style={customStyles.toastSubText}>{text2}</Text>}
-    </View>
-  ),
-};
+export default Login;
 
-const customStyles = StyleSheet.create({
-  successToast: {
-    height: 60,
-    width: "90%",
-    backgroundColor: Colors.Light_Teal,
-    padding: 10,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  errorToast: {
-    height: 60,
-    width: "90%",
-    backgroundColor: Colors.Red,
-    padding: 10,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  infoToast: {
-    height: 60,
-    width: "90%",
-    backgroundColor: "#17a2b8",
-    padding: 10,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  toastText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  toastSubText: {
-    color: "#ffffff",
-    fontSize: 14,
-  },
-});
 
 const styles = StyleSheet.create({
   container: {
@@ -233,7 +244,6 @@ const styles = StyleSheet.create({
     color: Colors.Dark_Teal,
   },
   forgetPasswordContainer: {
-    right: 5,
     alignItems: "flex-end",
   },
   forgetPasswordText: {
@@ -284,5 +294,3 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
 });
-
-export default Login;
