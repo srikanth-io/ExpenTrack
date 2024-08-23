@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { getBalanceHistory } from '../utils/Database/db';
+import { ScrollView } from 'react-native-virtualized-view';
+import { formatAmount } from '../utils/FormatAmount';
 
 const BalanceHistory: React.FC = () => {
   const [history, setHistory] = useState<any[]>([]);
@@ -11,7 +13,7 @@ const BalanceHistory: React.FC = () => {
     const fetchHistory = async () => {
       try {
         const balanceHistory = await getBalanceHistory();
-        console.log('Fetched balance history:', balanceHistory); // Log data to inspect structure
+        console.assert('Fetched balance history:', JSON.stringify(balanceHistory));
         setHistory(balanceHistory);
       } catch (error) {
         console.error('Error fetching balance history:', error);
@@ -22,22 +24,34 @@ const BalanceHistory: React.FC = () => {
   }, []);
 
   const renderItem = ({ item }: { item: any }) => (
-    <View style={styles.historyItem}>
-      <Text style={styles.historyText}>Date: {new Date(item.date).toLocaleDateString()}</Text>
-      <Text style={styles.historyText}>Name: {item.name}</Text>
-      <Text style={styles.historyText}>Amount: ₹ {item.amount.toFixed(2)}</Text>
-      <Text style={styles.historyText}>Category: {item.category}</Text>
-      <Text style={styles.historyText}>Bank: {item.bank}</Text>
-    </View>
+    <ScrollView>
+    <TouchableOpacity style={styles.historyItem}>
+      <View style={styles.ItemContainer}>
+        <View style={styles.nameContainer}>
+          <Text style={styles.nameText}>{item.name}</Text>
+        </View>
+        <View style={styles.DateHistoryContainer}>
+        <Text style={styles.DateHistoryText}>{new Date(item.date).toLocaleDateString()}</Text>
+        </View>
+        <View style={styles.bankContainer}>
+        <Text style={styles.bankHistoryText}>{item.bank}</Text>
+        </View>
+        
+      </View>
+      <View style={styles.HistoryAmountContainer}>
+        <Text style={styles.AmountHistoryText}>₹ {formatAmount(item.amount)}</Text>
+      </View>
+    </TouchableOpacity>
+    </ScrollView>
   );
+
 
   return (
     <View style={styles.container}>
-      <Text style={styles.historyTitle}>Balance History</Text>
       <FlatList
         data={history}
         renderItem={renderItem}
-        keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()} // Fallback to index if id is undefined
+        keyExtractor={(item, index) => item.id ? item.id.toString() : index.toString()} 
       />
     </View>
   );
@@ -49,22 +63,51 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Background_Color,
     padding: 20,
   },
-  historyTitle: {
-    fontSize: 18,
+  ItemContainer: {
+    flexDirection: 'column',
+    flex: 1,
+  },
+  nameContainer: {
+  },
+  bankContainer : {
+  },
+  DateHistoryContainer : {
+  },
+  nameText: {
     fontFamily: fonts.PoppinsSemiBold,
-    color: Colors.Text_Color,
-    marginBottom: 10,
+    color: Colors.Teal,
+    fontSize: 22,
   },
   historyItem: {
-    padding: 10,
-    borderBottomColor: '#ccc',
-    borderBottomWidth: 1,
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 20,
+    padding: 20,
+    flexDirection: 'row',
+    marginBottom: 10,
+    position: 'relative',
   },
-  historyText: {
+  DateHistoryText: {
+    fontFamily: fonts.PoppinsRegular, 
+    color: Colors.Teal,
+    fontSize: 18,
+  },
+  HistoryAmountContainer: { 
+    position: 'absolute',
+    right: 30, 
+    top: '50%', 
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  AmountHistoryText: {
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Teal,
+    fontSize: 25, 
+  },
+  bankHistoryText : {
     fontFamily: fonts.PoppinsRegular,
-    color: Colors.Dark_Green,
-    fontSize: 14,
-  },
+    color: Colors.Teal,
+    fontSize: 18, 
+  }
 });
 
 export default BalanceHistory;

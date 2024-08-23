@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { Colors } from '../utils/colors';
-import ExpensesList from '../components/ExpenseList';
+import ExpensesList from '../components/HomeList';
 import { fonts } from '../utils/fonts';
 import Balance from '../components/Balance';
 import { getAllExpenses } from '../utils/Database/db';

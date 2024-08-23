@@ -5,17 +5,26 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { Feather } from '@expo/vector-icons';
-import { initializeDatabase, saveExpense } from '../utils/Database/db';
+import { saveExpense } from '../utils/Database/db'; 
 import Balance from '../components/Balance';
 import Toast from 'react-native-toast-message';
 
-interface Category {
+type Expense = {
+  itemName: string;
+  date: string;
+  expenseAmount: number;
+  description: string;
+  category: string | null;
+  image: string | null;
+}
+
+type Category = {
   label: string;
   value: string | null;
 }
 
-interface AddExpensesNavigationProp {
-  navigation: any;
+type AddExpensesNavigationProp = {
+  navigation: any; 
 }
 
 const MIN_ITEM_NAME_LENGTH = 2;
@@ -46,32 +55,33 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
   const [formattedDate, setFormattedDate] = useState(formatDate(now));
   const [expenseAmount, setExpenseAmount] = useState('');
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState<any>(null);
+  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleImagePick = async () => {
-  try {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
 
-    if (!result.canceled && result.assets) {
-      setImage(result.assets[0]);
+      if (!result.canceled && result.assets) {
+        setImage(result.assets[0]);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to pick image.',
+      });
     }
-  } catch (error) {
-    console.error('Error picking image:', error);
-    Toast.show({
-      type: 'error',
-      text1: 'Error',
-      text2: 'Failed to pick image.',
-    });
-  }
-};
+  };
+
   const handleSave = async () => {
     if (itemName.length < MIN_ITEM_NAME_LENGTH) {
       Toast.show({
@@ -110,20 +120,16 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       return;
     }
 
-    const expense = {
+    const expense: Expense = {
       itemName,
       date: formattedDate,
-      expenseAmount: parseFloat(expenseAmount),
+      expenseAmount: expenseAmountValue,
       description,
       category: selectedCategory,
       image: image ? image.uri : null,
     };
 
-    saveExpense(expense);
-    navigation.navigate('Home');
-
     try {
-      await initializeDatabase();
       await saveExpense(expense);
 
       Toast.show({
@@ -154,7 +160,6 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
     setShowDatePicker(false);
 
     if (event.type === 'set' && selectedDate) {
-      // Prevent selecting future dates
       if (selectedDate > now) {
         Toast.show({
           type: 'error',
@@ -297,7 +302,6 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
     </KeyboardAvoidingView>
   );
 };
-
 
 export default AddExpenses;
 

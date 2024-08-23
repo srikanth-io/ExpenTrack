@@ -1,140 +1,325 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet, ScrollView, Alert, Platform, KeyboardAvoidingView } from 'react-native';
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Image,
+  Alert,
+  Platform,
+  KeyboardAvoidingView,
+  ScrollView,
+  Modal,
+  FlatList,
+  TouchableWithoutFeedback,
+  Keyboard,
+} from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
-import { getBalance, saveBalance, getIncome, saveIncome } from '../utils/Database/db'; 
-import Balance from './Balance';
+import { Feather } from '@expo/vector-icons';
+import { saveExpense } from '../utils/Database/db';
+import Balance from '../components/Balance';
 import Toast from 'react-native-toast-message';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
-const BalanceManager: React.FC = () => {
-  const [balance, setBalance] = useState<number>(0);
-  const [income, setIncome] = useState<number>(0);
-  const [amount, setAmount] = useState<string>('');
-  const [name, setName] = useState<string>('');
-  const [category, setCategory] = useState<string>('');
-  const [bank, setBank] = useState<string>('');
-  const [isDataChanged, setIsDataChanged] = useState<boolean>(false);
-  const navigation = useNavigation();
+type Expense = {
+  itemName: string;
+  date: string;
+  expenseAmount: number;
+  description: string;
+  category: string | null;
+  image: string | null;
+};
 
-  const fetchBalanceAndIncome = useCallback(async () => {
+type Category = {
+  label: string;
+  value: string | null;
+};
+
+type AddExpensesNavigationProp = {
+  navigation: any;
+};
+
+const MIN_ITEM_NAME_LENGTH = 2;
+
+const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
+  const categories: Category[] = [
+    { label: 'None', value: null },
+    { label: 'Food', value: 'food' },
+    { label: 'Transport', value: 'transport' },
+    { label: 'Income', value: 'income' },
+    { label: 'Petrol', value: 'petrol' },
+    { label: 'Groceries', value: 'groceries' },
+    { label: 'Snacks', value: 'snacks' },
+    { label: 'Festival', value: 'festival' },
+    { label: 'Others', value: 'others' },
+  ];
+
+  const formatDate = (date: Date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const now = new Date();
+  const [itemName, setItemName] = useState('');
+  const [date, setDate] = useState(now);
+  const [formattedDate, setFormattedDate] = useState(formatDate(now));
+  const [expenseAmount, setExpenseAmount] = useState('');
+  const [description, setDescription] = useState('');
+  const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const handleImagePick = async () => {
     try {
-      const currentBalance = await getBalance() || 0;
-      const totalIncome = await getIncome() || 0;
-      setBalance(currentBalance);
-      setIncome(totalIncome); 
-    } catch (error) {
-      console.error('Error fetching balance or income:', error);
-      Toast.show({
-        type: 'errorToast',
-        text1: 'Error',
-        text2: 'Failed to fetch balance or income.',
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
       });
-    }
-  }, []);
 
-  useEffect(() => {
-    fetchBalanceAndIncome();
-  }, [fetchBalanceAndIncome]);
-
-  const handleAddBalance = async () => {
-    const newAmount = parseFloat(amount);
-    if (isNaN(newAmount) || newAmount <= 0 || !name || !category || !bank) {
-      Toast.show({
-        type: 'errorToast',
-        text1: 'Validation Error',
-        text2: 'All fields must be filled and amount must be greater than 0.',
-      });
-      return;
-    }
-  
-    try {
-      const updatedBalance = balance + newAmount;
-      const updatedIncome = income + newAmount;
-  
-      const balanceEntry = {
-        amount: newAmount,
-        name,
-        category,
-        bank,
-        date: new Date().toISOString(),
-      };
-  
-      await saveBalance(updatedBalance, balanceEntry);
-      await saveIncome(updatedIncome);
-  
-      setBalance(updatedBalance);
-      setIncome(updatedIncome);
-  
-      Toast.show({
-        type: 'successToast',
-        text1: 'Success',
-        text2: 'Balance added successfully!',
-      });
-  
-      setAmount('');
-      setName('');
-      setCategory('');
-      setBank('');
-      setIsDataChanged(false);
+      if (!result.canceled && result.assets) {
+        setImage(result.assets[0]);
+      }
     } catch (error) {
-      console.error('Error updating balance:', error);
+      console.error('Error picking image:', error);
       Toast.show({
-        type: 'errorToast',
+        type: 'error',
         text1: 'Error',
-        text2: 'Failed to update balance.',
+        text2: 'Failed to pick image.',
       });
     }
   };
 
+  const handleSave = async () => {
+    if (itemName.length < MIN_ITEM_NAME_LENGTH) {
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: `Item name must contain at least ${MIN_ITEM_NAME_LENGTH} characters.`,
+      });
+      return;
+    }
+
+    if (!date) {
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please select a date.',
+      });
+      return;
+    }
+
+    if (!selectedCategory) {
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Please select a category.',
+      });
+      return;
+    }
+
+    const expenseAmountValue = parseFloat(expenseAmount);
+    if (isNaN(expenseAmountValue) || expenseAmountValue <= 0) {
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: 'Expense amount must be greater than 0.',
+      });
+      return;
+    }
+
+    const expense: Expense = {
+      itemName,
+      date: formattedDate,
+      expenseAmount: expenseAmountValue,
+      description,
+      category: selectedCategory,
+      image: image ? image.uri : null,
+    };
+
+    try {
+      await saveExpense(expense);
+
+      Toast.show({
+        type: 'success',
+        text1: 'Success',
+        text2: 'Expense saved successfully!',
+      });
+
+      // Reset form fields
+      setItemName('');
+      setDate(now);
+      setFormattedDate(formatDate(now));
+      setExpenseAmount('');
+      setDescription('');
+      setImage(null);
+      setSelectedCategory(null);
+      navigation.navigate('Home');
+    } catch (error) {
+      console.error('Error saving expense:', error);
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'Failed to save expense.',
+      });
+    }
+  };
+
+  const onChangeDate = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+
+    if (event.type === 'set' && selectedDate) {
+      if (selectedDate > now) {
+        Toast.show({
+          type: 'error',
+          text1: 'Invalid Date',
+          text2: 'Future dates are not allowed.',
+        });
+        return;
+      }
+
+      setDate(selectedDate);
+      setFormattedDate(formatDate(selectedDate));
+    }
+  };
+
+  const handleDatePickerPress = () => {
+    setShowDatePicker(true);
+  };
+
+  const handleSelectCategory = (value: string | null) => {
+    setSelectedCategory(value);
+    setModalVisible(false);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+  };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Balance/>
-        <View style={styles.MainContainer}>
-            <Text style={styles.AddBalanceText}>Add Balance</Text>
-          <View style={styles.subContainer}>
-            <Text style={styles.RupeesTxt}>₹</Text>
-            <TextInput
-            style={styles.AmountText} 
-            value={amount}
-             keyboardType="numeric"
-             onChangeText={setAmount}
-            placeholder="0.0"/>
-          </View>
-
+        <Balance />
         <View style={styles.formContainer}>
-          <TextInput
-            style={styles.input}
-            placeholder="Name"
-            value={name}
-            onChangeText={setName}
-            placeholderTextColor={Colors.Dark_Teal}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Category"
-            value={category}
-            onChangeText={setCategory}
-            placeholderTextColor={Colors.Dark_Teal}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Bank"
-            value={bank}
-            onChangeText={setBank}
-            placeholderTextColor={Colors.Dark_Teal}
-          />
-          <TouchableOpacity style={styles.addButton} onPress={handleAddBalance}>
-            <Text style={styles.addButtonText}>Add Balance</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.fieldContainer}>
+            <TextInput
+              style={styles.input}
+              value={itemName}
+              onChangeText={setItemName}
+              placeholder="Name"
+            />
+          </View>
+          <View style={styles.fieldContainer}>
+            <TouchableOpacity
+              style={styles.pickerButton}
+              onPress={() => setModalVisible(true)}
+            >
+              <Text style={styles.pickerButtonText}>
+                {selectedCategory
+                  ? categories.find((cat) => cat.value === selectedCategory)?.label
+                  : 'Select Category'}
+              </Text>
+              <Feather name="chevron-down" size={24} color={Colors.Dark_Green} />
+            </TouchableOpacity>
+            <Modal
+              transparent={true}
+              visible={modalVisible}
+              animationType="fade"
+              onRequestClose={handleModalClose}
+            >
+              <TouchableWithoutFeedback onPress={handleModalClose}>
+                <View style={styles.modalContainer}>
+                  <TouchableWithoutFeedback>
+                    <View style={styles.modalContent}>
+                      <FlatList
+                        data={categories}
+                        keyExtractor={(item) => item.value || item.label}
+                        renderItem={({ item }) => (
+                          <TouchableOpacity
+                            style={styles.modalItem}
+                            onPress={() => handleSelectCategory(item.value)}
+                          >
+                            <Text style={styles.modalItemText}>{item.label}</Text>
+                          </TouchableOpacity>
+                        )}
+                      />
+                    </View>
+                  </TouchableWithoutFeedback>
+                </View>
+              </TouchableWithoutFeedback>
+            </Modal>
+          </View>
+          <View style={styles.fieldContainer}>
+            <TouchableOpacity
+              style={styles.datePickerButton}
+              onPress={handleDatePickerPress}
+            >
+              <Text style={styles.datePickerText}>{formattedDate}</Text>
+            </TouchableOpacity>
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date"
+                display="default"
+                onChange={onChangeDate}
+                maximumDate={now}
+              />
+            )}
+          </View>
+          <View style={styles.fieldContainer}>
+            <TextInput
+              style={styles.input}
+              value={expenseAmount}
+              onChangeText={(text) =>
+                setExpenseAmount(text.replace(/[^0-9.]/g, ''))
+              }
+              keyboardType="number-pad"
+              placeholder="Expense amount"
+            />
+          </View>
+          <View style={styles.fieldContainer}>
+            <TextInput
+              style={styles.DesInput}
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Enter description here..."
+              multiline
+            />
+          </View>
+          <View style={styles.fieldContainer}>
+            <TouchableOpacity
+              style={styles.imagePickerButton}
+              onPress={handleImagePick}
+            >
+              <Text style={styles.imagePickerText}>Select Image</Text>
+            </TouchableOpacity>
+            {image && (
+              <Image source={{ uri: image.uri }} style={styles.selectedImage} />
+            )}
+          </View>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.button} onPress={handleSave}>
+              <Text style={styles.buttonText}>Save Expense</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
+      <Toast />
     </KeyboardAvoidingView>
   );
 };
+
+export default AddExpenses;
 
 const styles = StyleSheet.create({
   container: {
@@ -142,113 +327,113 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.Background_Color,
   },
   scrollContainer: {
+    flexGrow: 1,
+    justifyContent: 'center',
     paddingHorizontal: 20,
   },
-  MainContainer: {
-    flex :1,
-    marginTop : 163.5,
-    backgroundColor: Colors.Light_Teal,
-    padding: 20,
-    marginHorizontal: -20,
-    borderRadius: 20,
-    paddingBottom : 30,
-  },
-  AddBalanceText : {
-    fontSize : 16,
-    paddingHorizontal : 10,
-    fontFamily : fonts.PoppinsSemiBold,
-    color : Colors.Background_Color,
-  },
-  subContainer  : {
-    flexDirection : 'row',
-    flex : 1,
-    height : 'auto',
-    top : -10,
-  },
-  RupeesTxt : {
-    paddingHorizontal: 10,
-    fontSize: 50,
-    marginBottom: 30,
-    color: Colors.Text_Color,
-    fontFamily: fonts.PoppinsSemiBold,
-  },
-  AmountText: {
-    paddingHorizontal: 10,
-    left : -15,
-    fontSize: 50,
-    marginBottom: 30,
-    color: Colors.Text_Color,
-    fontFamily: fonts.PoppinsSemiBold,
-  },
-  AmountInput: {
-    fontFamily: fonts.PoppinsSemiBold,
-    paddingHorizontal: 10,
-    left : -10,
-    fontSize: 40,
-    color: Colors.Background_Color,
-    marginBottom: 30,
-  },
   formContainer: {
-    backgroundColor: Colors.Pale_Teal,
-    padding: 20,
-    borderRadius: 15,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 10,
-    justifyContent : 'center',
+    flex: 1,
+    justifyContent: 'center',
+  },
+  fieldContainer: {
+    marginBottom: 15,
   },
   input: {
-    height: 60,
-    backgroundColor: Colors.Background_Color,
-    fontFamily: fonts.PoppinsSemiBold,
-    borderRadius: 20,
+    height: 55,
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 15,
     paddingHorizontal: 10,
     fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
     color: Colors.Dark_Teal,
-    marginBottom: 10,
-    marginTop : 10,
   },
-  addButton: {
+  DesInput: {
+    height: 150,
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 15,
+    fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Teal,
+    textAlignVertical: 'top',
+    padding: 10,
+  },
+  datePickerButton: {
+    backgroundColor: Colors.Pale_Teal,
+    padding: 15,
+    borderRadius: 15,
+  },
+  datePickerText: {
+    fontFamily: fonts.PoppinsSemiBold,
+    fontSize: 16,
+    color: Colors.Dark_Teal,
+  },
+  imagePickerButton: {
+    backgroundColor: Colors.Light_Teal,
+    padding: 10,
+    borderRadius: 15,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  imagePickerText: {
+    fontFamily: fonts.PoppinsSemiBold,
+    fontSize: 18,
+    color: Colors.Dark_Teal,
+  },
+  selectedImage: {
+    width: 100,
+    height: 100,
+    marginTop: 10,
+    borderRadius: 10,
+  },
+  buttonContainer: {
+    marginTop: 20,
+  },
+  button: {
     backgroundColor: Colors.Teal,
-    padding: 20,
-    marginTop: 30,
+    padding: 15,
     borderRadius: 20,
     alignItems: 'center',
   },
-  addButtonText: {
+  buttonText: {
     fontFamily: fonts.PoppinsSemiBold,
-    fontSize: 18,
+    fontSize: 20,
     color: Colors.Background_Color,
   },
-});
-
-const customStyles = StyleSheet.create({
-  successToast: {
-    padding: 15,
-    backgroundColor: Colors.Dark_Teal,
-    borderRadius: 10,
-    marginHorizontal: 20,
+  pickerButton: {
+    height: 55,
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 15,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  errorToast: {
-    padding: 15,
-    backgroundColor: 'red',
-    borderRadius: 10,
-    marginHorizontal: 20,
-    alignItems: 'center',
-  },
-  toastText: {
-    color: 'white',
-    fontFamily: fonts.PoppinsSemiBold,
+  pickerButtonText: {
     fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Green,
   },
-  toastSubText: {
-    color: 'white',
-    fontFamily: fonts.PoppinsMedium,
-    fontSize: 14,
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  modalContent: {
+    width: '80%',
+    maxHeight: '50%',
+    backgroundColor: Colors.Pale_Teal,
+    borderRadius: 15,
+    padding: 20,
+  },
+  modalItem: {
+    padding: 15,
+    marginBottom: 5,
+  },
+  modalItemText: {
+    fontSize: 16,
+    fontFamily: fonts.PoppinsSemiBold,
+    color: Colors.Dark_Teal,
   },
 });
-
-export default BalanceManager;
