@@ -5,9 +5,9 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { Feather } from '@expo/vector-icons';
-import { saveExpense } from '../utils/Database/db'; 
-import Balance from '../components/Balance';
+import { saveExpense, getBalance, updateBalance } from '../utils/Database/db'; 
 import Toast from 'react-native-toast-message';
+import Balance from '../components/Balance';
 
 type Expense = {
   itemName: string;
@@ -129,8 +129,27 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       image: image ? image.uri : null,
     };
 
-    try {
+try {
+      // Fetch current balance
+      const currentBalance = await getBalance();
+
+      // Calculate updated balance
+      const updatedBalance = currentBalance - expenseAmountValue;
+
+      if (updatedBalance < 0) {
+        Toast.show({
+          type: 'error',
+          text1: 'Insufficient Balance',
+          text2: 'The expense amount exceeds the current balance.',
+        });
+        return;
+      }
+
+      // Save the expense
       await saveExpense(expense);
+
+      // Update the balance in the database
+      await updateBalance(updatedBalance);
 
       Toast.show({
         type: 'success',
@@ -138,6 +157,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
         text2: 'Expense saved successfully!',
       });
 
+      // Reset the form
       setItemName('');
       setDate(now);
       setFormattedDate(formatDate(now));
@@ -193,7 +213,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Balance />
+      <Balance/>
         <View style={styles.formContainer}>
           <View style={styles.fieldContainer}>
             <TextInput

@@ -12,6 +12,9 @@ const customStyles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'absolute',
+    left: '5%',
+    zIndex: 1000, 
   } as ViewStyle,
   errorToast: {
     height: 60,
@@ -21,6 +24,9 @@ const customStyles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'absolute',
+    left: '5%',
+    zIndex: 1000, 
   } as ViewStyle,
   infoToast: {
     height: 60,
@@ -30,6 +36,9 @@ const customStyles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'absolute',
+    left: '5%',
+    zIndex: 1000,
   } as ViewStyle,
   toastText: {
     color: '#fff',

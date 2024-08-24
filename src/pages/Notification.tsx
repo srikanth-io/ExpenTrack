@@ -1,75 +1,61 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
-import React, { useState, useEffect, ReactNode } from 'react';
-import Toast from 'react-native-toast-message';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 
-const Notification = () => {
-  const [notifications, setNotifications] = useState([]);
+interface NotificationProps {
+  type: 'balance' | 'expense' | 'remainingBalance';
+  amount: number;
+  onClose: () => void;
+}
 
-  useEffect(() => {
-    // Example: Adding a welcome notification on load
-    addNotification('Welcome! Your balance is updated.');
-  }, []);
+const Notification: React.FC<NotificationProps> = ({ type, amount, onClose }) => {
+  let message = '';
 
-  const addNotification = (message: string) => {
-    const newNotification = {
-      id: Date.now(),
-      message,
-      timestamp: new Date(),
-    };
-    setNotifications((prevNotifications) => [newNotification, ...prevNotifications]);
-    showInAppNotification(message);
-  };
-
-  const showInAppNotification = (message: any) => {
-    Toast.show({
-      type: 'success',
-      text1: message,
-      position: 'top', // Customize the toast position if needed
-      visibilityTime: 4000, // Customize how long the toast is visible
-    });
-  };
+  switch (type) {
+    case 'balance':
+      message = `Balance added: ₹${amount}`;
+      break;
+    case 'expense':
+      message = `Expense added: ₹${amount}`;
+      break;
+    case 'remainingBalance':
+      message = `Remaining balance: ₹${amount}`;
+      break;
+  }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={notifications}
-        keyExtractor={(item: {
-            message: ReactNode;
-            timestamp: any; id: { toString: () => any; }; 
-}) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.notificationItem}>
-            <Text style={styles.message}>{item.message}</Text>
-            <Text style={styles.timestamp}>{item.timestamp.toLocaleString()}</Text>
-          </View>
-        )}
-      />
-      <Toast ref={(ref: any) => Toast.setRef(ref)} />
+    <View style={styles.notificationContainer}>
+      <Text style={styles.notificationText}>{message}</Text>
+      <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+        <Text style={styles.closeButtonText}>X</Text>
+      </TouchableOpacity>
     </View>
   );
 };
 
-export default Notification;
-
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#fff',
-  },
-  notificationItem: {
+  notificationContainer: {
+    backgroundColor: '#444',
     padding: 15,
-    marginVertical: 10,
+    margin: 10,
     borderRadius: 10,
-    backgroundColor: '#f0f0f0',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  message: {
+  notificationText: {
+    color: '#fff',
     fontSize: 16,
-    color: '#000',
   },
-  timestamp: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 5,
+  closeButton: {
+    backgroundColor: '#ff5c5c',
+    borderRadius: 15,
+    padding: 5,
+    marginLeft: 10,
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
+
+export default Notification;

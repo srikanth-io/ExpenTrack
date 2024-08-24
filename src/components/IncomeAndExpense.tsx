@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { useNavigation } from '@react-navigation/native';
+import { getExpense, getIncome } from '../utils/Database/db';
 
 const IncomeAndExpense = () => {
   const [income, setIncome] = useState(0);
@@ -12,8 +13,8 @@ const IncomeAndExpense = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const incomeData = await getIncomeFromDB();
-        const expenseData = await getExpenseFromDB();
+        const incomeData = await getIncome();
+        const expenseData = await getExpense();
 
         setIncome(incomeData);
         setExpense(expenseData);

@@ -24,7 +24,7 @@ const BalanceHistory: React.FC = () => {
   }, []);
 
   const renderItem = ({ item }: { item: any }) => (
-    <ScrollView>
+    <ScrollView nestedScrollEnabled={true}>
     <TouchableOpacity style={styles.historyItem}>
       <View style={styles.ItemContainer}>
         <View style={styles.nameContainer}>

@@ -2,7 +2,7 @@ import React from 'react';
 import { BottomTabNavigationProp, createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { MaterialCommunityIcons, Entypo, Feather, FontAwesome } from '@expo/vector-icons';
-import AllExpensesPage from '../pages/AllExpensesPage';
+import AllExpensesPage from '../pages/AllTransactionsPage';
 import AddExpenses from '../pages/AddExpenses';
 import HomePage from '../pages/HomePage';
 import { fonts } from '../utils/fonts';

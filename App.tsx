@@ -16,13 +16,13 @@ import Toast from "react-native-toast-message";
 import Notification from "./src/pages/Notification";
 import Income from "./src/components/Income";
 import Expenses from "./src/components/Expenses";
-import EditExpense from "./src/components/EditExpense";
 import { StatusBar } from "expo-status-bar";
 import Login from "./src/pages/LoginPage";
 import Register from "./src/pages/RegisterPage";
 import PasswordResetPage from "./src/pages/PasswordResetPage";
 import { User } from "firebase/auth";
 import { auth } from "./src/utils/Auth/fireBaseConfig";
+import EditTransactions from "./src/components/EditTransactions";
 
 const Stack = createStackNavigator();
 
@@ -135,8 +135,8 @@ export default function App() {
           }}
         />
         <Stack.Screen
-          name="EditExpenses"
-          component={EditExpense}
+          name="EditTransactions"
+          component={EditTransactions}
           options={{
             headerTitle: "Edit Transactions",
             headerTitleStyle: {

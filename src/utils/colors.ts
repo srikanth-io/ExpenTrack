@@ -46,4 +46,9 @@ export const Colors = {
   Default_Icon: '#A9A9A9', // DarkGray
   Default_Background: '#F0F0F0', // LightGray
   Dark_grey : '#181818', //Dark grey
+
+
+  Dark_Red : '#D32F2F', // Dark_Red
+  palest_Light_Teal : '#E0F7FA', //Palest light Teal 
+  palest_Light_Red : '#FFEBEE', //Palest light red
 };
