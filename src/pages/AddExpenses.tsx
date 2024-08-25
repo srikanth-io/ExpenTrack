@@ -11,17 +11,17 @@ import Balance from '../components/Balance';
 
 type Expense = {
   itemName: string;
-  date: string;
+  date: string; // This will now be in ISO format
   expenseAmount: number;
   description: string;
   category: string | null;
   image: string | null;
-}
+};
 
 type Category = {
   label: string;
   value: string | null;
-}
+};
 
 type AddExpensesNavigationProp = {
   navigation: any; 
@@ -120,15 +120,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       return;
     }
 
-    const expense: Expense = {
-      itemName,
-      date: formattedDate,
-      expenseAmount: expenseAmountValue,
-      description,
-      category: selectedCategory,
-      image: image ? image.uri : null,
-    };
-
+    
 try {
       // Fetch current balance
       const currentBalance = await getBalance();

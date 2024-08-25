@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
 import { getExpenseHistory, updateTotalExpense } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
@@ -8,7 +8,7 @@ import { formatAmount } from '../utils/FormatAmount';
 type Expense = {
   id: string | any;
   itemName: string;
-  date: string;
+  date: string; // Ensure this is in a format that can be parsed by Date
   expenseAmount: number;
   description?: string;
   category?: string;
@@ -31,7 +31,10 @@ const ExpenseHistory: React.FC = () => {
         await updateTotalExpense(total);
 
         // Sort expenses by date and time in descending order (newest first)
-        const sortedExpenses = fetchedExpenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const sortedExpenses = fetchedExpenses.sort((a, b) => {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
+
         setExpenses(sortedExpenses);
       } catch (error) {
         console.error('Error fetching expense history:', error);
@@ -50,7 +53,7 @@ const ExpenseHistory: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: Expense }) => (
-    <TouchableOpacity style={styles.historyItem} >
+    <TouchableOpacity style={styles.historyItem}>
       <View style={styles.ItemContainer}>
         <View style={styles.nameContainer}>
           <Text style={styles.nameText}>{item.itemName}</Text>
@@ -74,16 +77,14 @@ const ExpenseHistory: React.FC = () => {
   );
 
   return (
-      <ScrollView nestedScrollEnabled={true}>
     <View style={styles.container}>
-        <FlatList
-          data={expenses}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-        />
+      <FlatList
+        data={expenses}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={styles.listContainer}
+      />
     </View>
-      </ScrollView>
   );
 };
 

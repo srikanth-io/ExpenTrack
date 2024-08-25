@@ -87,6 +87,7 @@ const BalanceManager: React.FC = () => {
     }
   };
 
+
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>

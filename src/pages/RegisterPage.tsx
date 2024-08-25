@@ -44,7 +44,7 @@ const Register: React.FC<Props> = ({ navigation }) => {
   }>({});
 
   const handleRegister = async () => {
-    Toast.hide(); // Clear previous toast messages
+    Toast.hide(); 
 
     const errorToast: {
       username?: string;

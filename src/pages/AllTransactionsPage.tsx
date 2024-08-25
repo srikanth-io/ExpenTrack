@@ -33,7 +33,7 @@ const AllTransactionsPage: React.FC = () => {
       );
 
       // Debugging: log fetched data
-      console.log('Combined Entries:', combinedEntries);
+      // console.log('Combined Entries:', combinedEntries);
 
       setEntries(combinedEntries);
 
@@ -56,7 +56,7 @@ const AllTransactionsPage: React.FC = () => {
     fetchDataIfNeeded();
   }, []);
 
-  console.log('Entries in AllTransactionsPage:', entries);
+  // console.log('Entries in AllTransactionsPage:', entries);
 
   return (
     <View style={styles.container}>
@@ -88,6 +88,7 @@ const styles = StyleSheet.create({
   },
   listContainerText: {
     fontSize: 23,
+    marginBottom : 20,
     fontFamily: fonts.PoppinsSemiBold,
     color: Colors.Dark_Teal,
   },
