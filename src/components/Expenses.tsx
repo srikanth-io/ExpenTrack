@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { getExpenseHistory, updateTotalExpense } from '../utils/Database/db';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
@@ -17,6 +17,8 @@ type Expense = {
 const ExpenseHistory: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [totalAmount, setTotalAmount] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchExpenses = async () => {
@@ -29,7 +31,7 @@ const ExpenseHistory: React.FC = () => {
 
         // Update Firestore with total expense
         await updateTotalExpense(total);
-
+        
         // Sort expenses by date and time in descending order (newest first)
         const sortedExpenses = fetchedExpenses.sort((a, b) => {
           return new Date(b.date).getTime() - new Date(a.date).getTime();
@@ -38,6 +40,9 @@ const ExpenseHistory: React.FC = () => {
         setExpenses(sortedExpenses);
       } catch (error) {
         console.error('Error fetching expense history:', error);
+        setError('Failed to load expense history');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -75,6 +80,23 @@ const ExpenseHistory: React.FC = () => {
       </View>
     </TouchableOpacity>
   );
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={Colors.Teal} />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -144,6 +166,16 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsRegular,
     color: Colors.Red,
     fontSize: 16,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontFamily: fonts.PoppinsRegular,
+    color: Colors.Red,
+    fontSize: 18,
   },
 });
 

@@ -112,6 +112,7 @@ export const saveIncome = async (newIncome: number) => {
   }
 };
 
+
 type Expense = {
   expenseAmount: number;
   amount: number;
@@ -171,5 +172,48 @@ export const getExpenseHistory = async (): Promise<Expense[]> => {
   } catch (error) {
     console.error('Error fetching expense history from Firestore:', error);
     throw new Error('Failed to fetch expense history.');
+  }
+};
+
+
+
+// Function to Update Income Entry
+export const updateIncomeEntry = async (id: string, updatedData: { name?: string; date?: string; amount?: number; description?: string }) => {
+  try {
+    // Fetch the current income
+    const incomeDoc = doc(db, 'incomeEntries', id);
+    const incomeSnap = await getDoc(incomeDoc);
+    const currentIncome = incomeSnap.exists() ? incomeSnap.data().amount : 0;
+
+    // Update the income entry
+    await setDoc(incomeDoc, updatedData, { merge: true });
+    
+    // Update balance based on the new amount
+    const newIncome = updatedData.amount ?? currentIncome; // Use the updated amount or fallback to currentIncome
+    const currentBalance = await getCurrentBalance();
+    const balanceChange = (newIncome - currentIncome); // Calculate the change in balance
+    const newBalance = currentBalance + balanceChange; // Update balance
+
+    // Save the new balance
+    const balanceDoc = doc(db, 'balance', 'current');
+    await setDoc(balanceDoc, { amount: newBalance });
+
+    console.log('Income entry and balance updated successfully!');
+  } catch (error) {
+    console.error('Error updating income entry:', error);
+    throw new Error('Failed to update income entry.');
+  }
+};
+
+// Function to Get the Current Balance
+const getCurrentBalance = async (): Promise<number> => {
+  try {
+    const balanceDoc = doc(db, 'balance', 'current'); // Collection 'balance', document 'current'
+    const docSnap = await getDoc(balanceDoc);
+    const data = docSnap.exists() ? docSnap.data() : { amount: 0 };
+    return data.amount || 0;
+  } catch (error) {
+    console.error('Error fetching balance from Firestore:', error);
+    throw new Error('Failed to fetch balance.');
   }
 };

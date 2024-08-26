@@ -9,8 +9,8 @@ import {
   Platform,
   StyleSheet,
 } from "react-native";
-import Toast, { ToastConfig } from "react-native-toast-message";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import Toast from "react-native-toast-message";
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
 import { StackNavigationProp } from '@react-navigation/stack';
 import { auth } from "../utils/Auth/fireBaseConfig";
 import { Colors } from "../utils/colors";
@@ -73,6 +73,16 @@ const Login = ({ navigation }: { navigation: LoginScreenNavigationProp }) => {
     // Attempt to sign in
     try {
       await signInWithEmailAndPassword(auth, usernameOrEmail, password);
+
+      // Log user details
+      const user = getAuth().currentUser;
+      if (user) {
+        console.log("User Details:");
+        console.log("Email:", user.email);
+        console.log("UID:", user.uid);
+        // You can log other details if needed
+      }
+
       Toast.show({
         type: "success",
         text1: "Success",
@@ -89,66 +99,7 @@ const Login = ({ navigation }: { navigation: LoginScreenNavigationProp }) => {
     }
   };
 
-  const toastConfig: ToastConfig = {
-    success: ({ text1, text2 }) => (
-      <View style={customStyles.successToast}>
-        <Text style={customStyles.toastText}>{text1}</Text>
-        <Text style={customStyles.toastSubText}>{text2}</Text>
-      </View>
-    ),
-    error: ({ text1, text2 }) => (
-      <View style={customStyles.errorToast}>
-        <Text style={customStyles.toastText}>{text1}</Text>
-        <Text style={customStyles.toastSubText}>{text2}</Text>
-      </View>
-    ),
-    info: ({ text1, text2 }) => (
-      <View style={customStyles.infoToast}>
-        <Text style={customStyles.toastText}>{text1}</Text>
-        <Text style={customStyles.toastSubText}>{text2}</Text>
-      </View>
-    ),
-  };
-
-  const customStyles = StyleSheet.create({
-    successToast: {
-      height: 60,
-      width: "90%",
-      backgroundColor: Colors.Light_Teal,
-      padding: 10,
-      borderRadius: 20, 
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    errorToast: {
-      height: 60,
-      width: "90%",
-      backgroundColor: Colors.Red,
-      padding: 10,
-      borderRadius: 20, 
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    infoToast: {
-      height: 60,
-      width: "90%",
-      backgroundColor: "#17a2b8",
-      padding: 10,
-      borderRadius: 20, 
-      justifyContent: "center",
-      alignItems: "center",
-    },
-    toastText: {
-      color: "#ffffff",
-      fontSize: 16,
-      fontWeight: "bold",
-    },
-    toastSubText: {
-      color: "#ffffff",
-      fontSize: 14,
-    },
-  });
-
+ 
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -202,13 +153,11 @@ const Login = ({ navigation }: { navigation: LoginScreenNavigationProp }) => {
           </TouchableOpacity>
         </View>
       </ScrollView>
-      <Toast config={toastConfig} />
     </KeyboardAvoidingView>
   );
 };
 
 export default Login;
-
 
 const styles = StyleSheet.create({
   container: {

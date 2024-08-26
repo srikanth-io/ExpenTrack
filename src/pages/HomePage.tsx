@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Text, ActivityIndicator, Alert } from 'react-native';
+import { ScrollView } from 'react-native-virtualized-view';
 import { getBalanceHistory, getExpenseHistory } from '../utils/Database/db';
 import IncomeAndExpense from '../components/IncomeAndExpense';
 import Balance from '../components/Balance';
 import AllEntries from '../components/AllEntries';
 import { fonts } from '../utils/fonts';
-import Toast from 'react-native-toast-message';
-import toastConfig from '../components/ToastMessages';
 import { Colors } from '../utils/colors';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -15,7 +14,7 @@ import { RootStackParamList } from '../navigation/types'; // Assuming you have a
 type HomePageNavigationProp = StackNavigationProp<RootStackParamList, 'EditTransactions'>;
 
 type Entry = {
-  id: string;
+  id: string | any;
   itemName?: string;
   date: string;
   amount?: number;
@@ -26,6 +25,7 @@ type Entry = {
 
 const HomePage: React.FC = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [loading, setLoading] = useState<boolean>(true); 
   const navigation = useNavigation<HomePageNavigationProp>();
 
   const fetchDataIfNeeded = async () => {
@@ -35,34 +35,34 @@ const HomePage: React.FC = () => {
         getExpenseHistory(),
       ]);
 
-      // Combine and sort data by date
-      const combinedEntries = [...balanceEntries, ...expenseEntries].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-      );
-
-      // Debugging: log fetched data
-      // console.log('Combined Entries:', combinedEntries);
+      // Combine and sort the entries by date
+      const combinedEntries = [...balanceEntries, ...expenseEntries].sort((a, b) => {
+        return new Date(b.date).getTime() - new Date(a.date).getTime();
+      });
 
       setEntries(combinedEntries);
 
-      Toast.show({
-        type: 'successToast',
-        text1: 'Data fetched!',
-        position: 'top',
-      });
+      console.log('Home Data fetched successfully!'); // Log success message
     } catch (error) {
       console.error('Error fetching data:', error);
-      Toast.show({
-        type: 'errorToast',
-        text1: 'Failed to fetch data.',
-        position: 'top',
-      });
+      Alert.alert('Error', 'Failed to fetch Home data.'); // Show alert on error
+    } finally {
+      setLoading(false); 
     }
   };
 
   useEffect(() => {
     fetchDataIfNeeded();
   }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={Colors.Teal} />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -71,22 +71,18 @@ const HomePage: React.FC = () => {
           <Balance />
         </View>
         <IncomeAndExpense />
-        <TouchableOpacity
-          style={styles.listContainer}
-          onPress={() => navigation.navigate('EditTransactions')} 
-        >
+        <View style={styles.listContainer}> 
           <Text style={styles.listContainerText}>Recent Transactions</Text>
-          <AllEntries entries={entries}  onPress={() => navigation.navigate('EditTransactions')}/>
-        </TouchableOpacity>
+          <AllEntries entries={entries} onPress={() => navigation.navigate('EditTransactions')} />
+        </View>
       </ScrollView>
-      <Toast config={toastConfig} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    position : 'relative',
+    position: 'relative',
     flex: 1,
     backgroundColor: Colors.Background_Color,
   },
@@ -101,16 +97,21 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   listContainer: {
-    position : 'static',
+    position: 'static',
     flex: 1,
     padding: 15,
-    top: '-2.5%',
+    top: -75,
   },
   listContainerText: {
     fontSize: 23,
-    marginBottom : 20,
+    marginBottom: 20,
     fontFamily: fonts.PoppinsSemiBold,
     color: Colors.Dark_Teal,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

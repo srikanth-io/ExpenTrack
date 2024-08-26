@@ -37,7 +37,7 @@ const NewsPage = () => {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#0000ff" />
+        <ActivityIndicator size="large" color= {Colors.Teal} />
         <Text>Loading...</Text>
       </View>
     );
@@ -64,6 +64,7 @@ const NewsPage = () => {
             <Text style={styles.publishedAt}>Published at: {new Date(item.publishedAt).toLocaleDateString()}</Text>
           </View>
         )}
+        scrollEnabled={true}
       />
     </View>
   );

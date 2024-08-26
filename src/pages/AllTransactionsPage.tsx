@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Text, ScrollView } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { getBalanceHistory, getExpenseHistory } from '../utils/Database/db';
 import AllEntries from '../components/AllEntries';
 import { fonts } from '../utils/fonts';
-import Toast from 'react-native-toast-message';
-import toastConfig from '../components/ToastMessages';
 import { Colors } from '../utils/colors';
+import Toast from 'react-native-toast-message';
 
 type Entry = {
   id: string;
@@ -19,6 +18,7 @@ type Entry = {
 
 const AllTransactionsPage: React.FC = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [loading, setLoading] = useState<boolean>(true); // Add loading state
 
   const fetchDataIfNeeded = async () => {
     try {
@@ -32,23 +32,22 @@ const AllTransactionsPage: React.FC = () => {
         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
       );
 
-      // Debugging: log fetched data
-      // console.log('Combined Entries:', combinedEntries);
-
       setEntries(combinedEntries);
 
       Toast.show({
-        type: 'successToast',
+        type: 'success',
         text1: 'Data fetched!',
         position: 'top',
       });
     } catch (error) {
       console.error('Error fetching data:', error);
       Toast.show({
-        type: 'errorToast',
+        type: 'error',
         text1: 'Failed to fetch data.',
         position: 'top',
       });
+    } finally {
+      setLoading(false); // Set loading to false after fetching
     }
   };
 
@@ -56,7 +55,14 @@ const AllTransactionsPage: React.FC = () => {
     fetchDataIfNeeded();
   }, []);
 
-  // console.log('Entries in AllTransactionsPage:', entries);
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={Colors.Teal} />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -66,7 +72,7 @@ const AllTransactionsPage: React.FC = () => {
           <AllEntries entries={entries} />
         </View>
       </ScrollView>
-      <Toast config={toastConfig} />
+      <Toast />
     </View>
   );
 };
@@ -76,7 +82,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.Background_Color,
     zIndex: 1,
-
   },
   scrollContainer: {
     flex: 1,
@@ -88,12 +93,14 @@ const styles = StyleSheet.create({
   },
   listContainerText: {
     fontSize: 23,
-    marginBottom : 20,
+    marginBottom: 20,
     fontFamily: fonts.PoppinsSemiBold,
     color: Colors.Dark_Teal,
   },
-  toast: {
-    zIndex: 1000,  
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

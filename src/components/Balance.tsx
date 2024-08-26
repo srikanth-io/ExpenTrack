@@ -71,12 +71,11 @@ const styles = StyleSheet.create({
   balanceContainer: {
     flex: 1,
     padding: 5,
-    left: 100,
     top : -20,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: -15,
-    width: '60%',
   },
   AmountContainer : {
     flex: 1,
@@ -98,7 +97,7 @@ const styles = StyleSheet.create({
     fontFamily: fonts.PoppinsRegular,
   },
   EditIconbalance: {
-    left: 6,
+    left: 0,
     top: 0,
   }
 });

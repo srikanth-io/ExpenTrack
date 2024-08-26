@@ -98,14 +98,14 @@ const TabNavigator: React.FC<TabNavigatorProps> = ({ navigation }) => {
           } else {
             label = 'Add';
           }
-          return <Text style={{ color: focused ? Colors.Dark_Teal : Colors.Light_Teal }}>{label}</Text>;
+          return <Text style={{ color: focused ? Colors.palest_Light_Teal : Colors.Light_Teal }}>{label}</Text>;
         },
         tabBarLabelStyle: {
           fontSize: 12,
           fontFamily: fonts.PoppinsRegular,
         },
         tabBarStyle: styles.tabBarStyle,
-        tabBarActiveTintColor: Colors.Dark_Teal,
+        tabBarActiveTintColor: Colors.palest_Light_Teal,
         tabBarInactiveTintColor: Colors.Light_Teal,
       })}
     >
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
   tabBarStyle: {
     height: 70,
     paddingBottom: 10,
-    backgroundColor: Colors.Pale_Teal,
+    backgroundColor: Colors.Teal,
     borderRadius: 20,
     elevation: 10,
   },

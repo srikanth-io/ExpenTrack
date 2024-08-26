@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Colors } from '../utils/colors';
 import { fonts } from '../utils/fonts';
 import { getBalanceHistory } from '../utils/Database/db';
 import { formatAmount } from '../utils/FormatAmount';
+import { useNavigation } from '@react-navigation/native';
 
 type BalanceEntry = {
-  id: string | any;
+  id: string;
   name: string;
   date: string; 
   amount: number;
@@ -15,6 +16,9 @@ type BalanceEntry = {
 
 const BalanceHistory: React.FC = () => {
   const [history, setHistory] = useState<BalanceEntry[]>([]);
+  const [loading, setLoading] = useState<boolean>(true); // Add loading state
+  const [error, setError] = useState<string | null>(null); // Add error state
+  const navigation = useNavigation(); // Initialize the navigation hook
 
   useEffect(() => {
     const fetchHistory = async () => {
@@ -26,15 +30,34 @@ const BalanceHistory: React.FC = () => {
           return new Date(b.date).getTime() - new Date(a.date).getTime();
         });
 
-        console.assert('Fetched balance history:', JSON.stringify(sortedHistory));
         setHistory(sortedHistory);
       } catch (error) {
         console.error('Error fetching balance history:', error);
+        setError('Failed to load balance history');
+      } finally {
+        setLoading(false); // Set loading to false after fetching
       }
     };
 
     fetchHistory();
   }, []);
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator size="large" color={Colors.Teal} />
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorText}>{error}</Text>
+      </View>
+    );
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -45,7 +68,10 @@ const BalanceHistory: React.FC = () => {
   };
 
   const renderItem = ({ item }: { item: BalanceEntry }) => (
-    <TouchableOpacity style={styles.historyItem}>
+    <TouchableOpacity
+      style={styles.historyItem}
+      onPress={() => navigation.navigate('EditIncome', { entryId: item.id })} // Navigate to EditIncome page with entryId as a parameter
+    >
       <View style={styles.ItemContainer}>
         <View style={styles.nameContainer}>
           <Text style={styles.nameText}>{item.name}</Text>
@@ -68,7 +94,7 @@ const BalanceHistory: React.FC = () => {
       <FlatList
         data={history}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
       />
     </View>
@@ -124,6 +150,16 @@ const styles = StyleSheet.create({
   bankHistoryText: {
     fontFamily: fonts.PoppinsRegular,
     color: Colors.Teal,
+    fontSize: 18,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorText: {
+    fontFamily: fonts.PoppinsRegular,
+    color: Colors.Red,
     fontSize: 18,
   },
 });

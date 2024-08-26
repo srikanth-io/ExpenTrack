@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { getBalanceHistory, getExpenseHistory } from '../utils/Database/db';
 import { formatAmount } from '../utils/FormatAmount';
 import { fonts } from '../utils/fonts';
@@ -10,7 +11,7 @@ type Entry = {
   type: string;
   id: string;
   name?: string;
-  date: string;
+  date: string; // Ensure this includes date and time
   bank?: string;
   amount?: number;
   itemName?: string;
@@ -21,6 +22,7 @@ type Entry = {
 
 const AllEntries: React.FC = () => {
   const [entries, setEntries] = useState<Entry[]>([]);
+  const navigation = useNavigation();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,25 +32,23 @@ const AllEntries: React.FC = () => {
           getExpenseHistory(),
         ]);
 
-        // Map and format data
         const formattedBalanceHistory = balanceHistory.map((item: any) => ({
-          id: item.id, // Ensure `id` is available
+          id: item.id,
           name: item.name,
-          date: new Date(item.date).toLocaleDateString(),
+          date: item.date, // Ensure date includes time
           bank: item.bank,
           amount: item.amount,
         }));
 
         const formattedExpenseHistory = expenseHistory.map((item: any) => ({
-          id: item.id, // Ensure `id` is available
+          id: item.id,
           itemName: item.itemName,
-          date: new Date(item.date).toLocaleDateString(),
+          date: item.date, // Ensure date includes time
           category: item.category || 'No Category',
           description: item.description || 'No Description',
           expenseAmount: item.expenseAmount,
         }));
 
-        // Combine and sort entries by date (newest first)
         const combinedEntries = [
           ...formattedBalanceHistory.map(item => ({ ...item, type: 'income' })),
           ...formattedExpenseHistory.map(item => ({ ...item, type: 'expense' })),
@@ -63,19 +63,21 @@ const AllEntries: React.FC = () => {
     fetchData();
   }, []);
 
-  // Function to add a new entry (to simulate new data entry)
-  const addNewEntry = (entry: Entry) => {
-    setEntries(prevEntries => [entry, ...prevEntries]);
+  const handlePress = (entry: Entry) => {
+    const targetScreen = entry.type === 'income' ? 'EditIncome' : 'EditExpense';
+    navigation.navigate(targetScreen, { entry });
   };
 
   const renderItem = ({ item }: { item: Entry }) => {
-    // Determine styles based on entry type
     const textColor = item.type === 'income' ? Colors.Teal : Colors.Red;
     const amountColor = item.type === 'income' ? Colors.Teal : Colors.Red;
     const isExpense = item.type === 'expense';
 
     return (
-      <TouchableOpacity style={[styles.historyItem, { backgroundColor: isExpense ? Colors.palest_Light_Red : Colors.palest_Light_Teal }]}>
+      <TouchableOpacity
+        style={[styles.historyItem, { backgroundColor: isExpense ? Colors.palest_Light_Red : Colors.Pale_Teal }]}
+        onPress={() => handlePress(item)}
+      >
         <View style={styles.ItemContainer}>
           <View style={styles.nameContainer}>
             <Text style={[styles.nameText, { color: textColor, fontFamily: fonts.PoppinsSemiBold }]}>
@@ -84,7 +86,7 @@ const AllEntries: React.FC = () => {
           </View>
           <View style={styles.DateHistoryContainer}>
             <Text style={[styles.DateHistoryText, { color: textColor, fontFamily: fonts.PoppinsSemiBold }]}>
-              {item.date}
+              {new Date(item.date).toLocaleString()} 
             </Text>
           </View>
           <View style={styles.bankContainer}>
@@ -116,6 +118,7 @@ const AllEntries: React.FC = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
+        scrollEnabled={false}
       />
     </View>
   );

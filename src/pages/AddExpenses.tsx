@@ -11,7 +11,7 @@ import Balance from '../components/Balance';
 
 type Expense = {
   itemName: string;
-  date: string; // This will now be in ISO format
+  date: string; 
   expenseAmount: number;
   description: string;
   category: string | null;
@@ -42,17 +42,9 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
     { label: 'Others', value: 'others' },
   ];
 
-  const formatDate = (date: Date) => {
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
-  };
-
   const now = new Date();
   const [itemName, setItemName] = useState('');
   const [date, setDate] = useState(now);
-  const [formattedDate, setFormattedDate] = useState(formatDate(now));
   const [expenseAmount, setExpenseAmount] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState<ImagePicker.ImagePickerAsset | null>(null);
@@ -120,8 +112,7 @@ const AddExpenses: React.FC<AddExpensesNavigationProp> = ({ navigation }) => {
       return;
     }
 
-    
-try {
+    try {
       // Fetch current balance
       const currentBalance = await getBalance();
 
@@ -136,6 +127,16 @@ try {
         });
         return;
       }
+
+      // Prepare expense object
+      const expense: Expense = {
+        itemName,
+        date: date.toISOString(),
+        expenseAmount: expenseAmountValue,
+        description,
+        category: selectedCategory,
+        image: image?.uri || null,
+      };
 
       // Save the expense
       await saveExpense(expense);
@@ -152,7 +153,6 @@ try {
       // Reset the form
       setItemName('');
       setDate(now);
-      setFormattedDate(formatDate(now));
       setExpenseAmount('');
       setDescription('');
       setImage(null);
@@ -181,8 +181,7 @@ try {
         return;
       }
 
-      setDate(selectedDate);
-      setFormattedDate(formatDate(selectedDate));
+      setDate(selectedDate); 
     }
   };
 
@@ -205,7 +204,7 @@ try {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Balance/>
+        <Balance />
         <View style={styles.formContainer}>
           <View style={styles.fieldContainer}>
             <TextInput
@@ -240,6 +239,7 @@ try {
                       <FlatList
                         data={categories}
                         keyExtractor={(item) => item.value || item.label}
+                        scrollEnabled={false}
                         renderItem={({ item }) => (
                           <TouchableOpacity
                             style={styles.modalItem}
@@ -260,7 +260,9 @@ try {
               style={styles.datePickerButton}
               onPress={handleDatePickerPress}
             >
-              <Text style={styles.datePickerText}>{formattedDate}</Text>
+              <Text style={styles.datePickerText}>
+                {new Date(date).toLocaleDateString()} 
+              </Text>
             </TouchableOpacity>
             {showDatePicker && (
               <DateTimePicker

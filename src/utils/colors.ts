@@ -3,10 +3,6 @@ export const Colors = {
   Text_Color: "#ffffff",        // White
   Dark_Green : '#2e4541',       // Dark Green
 
-  Midnight_Blue: "#17153b",     // Midnight Blue
-  Royal_Blue: "#2e236c",        // Royal Blue
-  Indigo: "#433d8b",            // Indigo
-  Lavender: "#c8acd6",          // Lavender
 
   // Mixed Colors
   Teal: "#006d75",              // Teal
